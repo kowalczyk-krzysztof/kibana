@@ -39,8 +39,11 @@ export const sortPredicateSaveSourceOrder: SortPredicatePureFn =
     return node2.value - node1.value;
   };
 
-const sortPredicatePieDonut: SortPredicatePieDonutFn = (visParams) =>
-  visParams.respectSourceOrder ? sortPredicateSaveSourceOrder() : undefined;
+const sortPredicatePieDonut: SortPredicatePieDonutFn = (visParams) => {
+  const test = visParams.respectSourceOrder ? sortPredicateSaveSourceOrder() : undefined;
+
+  return test;
+};
 
 const sortPredicateMosaic: SortPredicateDefaultFn = (visData, columns) => {
   const sortingMap = columns[0]?.id ? extractUniqTermsMap(visData, columns[0].id) : {};
