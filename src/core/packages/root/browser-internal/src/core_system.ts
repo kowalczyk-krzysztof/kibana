@@ -321,6 +321,8 @@ export class CoreSystem {
       await this.integrations.start({ uiSettings });
 
       const coreUiTargetDomElement = document.createElement('div');
+      const capybaraOverlay = document.createElement('div');
+      capybaraOverlay.id = 'capybara-overlay';
       coreUiTargetDomElement.id = 'kibana-body';
       coreUiTargetDomElement.dataset.testSubj = 'kibanaChrome';
       const notificationsTargetDomElement = document.createElement('div');
@@ -334,6 +336,8 @@ export class CoreSystem {
         userProfile,
         targetDomElement: overlayTargetDomElement,
       });
+
+      overlayTargetDomElement.appendChild(capybaraOverlay);
 
       const customBranding = this.customBranding.start();
       const application = await this.application.start({
