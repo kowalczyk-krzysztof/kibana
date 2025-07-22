@@ -49,7 +49,7 @@ export async function searchDashboards({
     contentTypeId: DASHBOARD_CONTENT_ID,
     query: {
       text: search ? `${search}*` : undefined,
-      limit: size,
+      limit: 10000,
       tags: {
         included: (hasReference ?? []).map(({ id }) => id),
         excluded: (hasNoReference ?? []).map(({ id }) => id),
