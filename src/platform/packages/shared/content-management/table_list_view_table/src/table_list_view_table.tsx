@@ -1207,6 +1207,9 @@ function TableListViewTableComp<T extends UserContentCommonSchema>({
           clearTagSelection={clearTagSelection}
           createdByEnabled={createdByEnabled}
           favoritesEnabled={favoritesEnabled}
+          getDetailViewLink={getDetailViewLink}
+          getOnClickTitle={getOnClickTitle}
+          dateFormatterComp={DateFormatterComp}
         />
 
         {/* Delete modal */}
