@@ -8,19 +8,10 @@
  */
 
 import React, { useState, useMemo, useCallback, memo } from 'react';
-import { useReactTable, getCoreRowModel, ColumnDef, flexRender } from '@tanstack/react-table';
+import { ColumnDef } from '@tanstack/react-table';
+import { TanstackDataGrid } from '@kbn/tanstack-datagrid';
 
-import {
-  EuiTable,
-  EuiTableBody,
-  EuiTableRow,
-  EuiTableRowCell,
-  EuiFlexGroup,
-  EuiTablePagination,
-  EuiSpacer,
-  EuiSearchBar,
-  QueryType,
-} from '@elastic/eui';
+import { QueryType } from '@elastic/eui';
 import {
   ManagedAvatarTip,
   NoCreatorTip,
@@ -106,34 +97,6 @@ const TanstackTableComponent = ({
     [CustomTableSortSelect]
   );
 
-  const sortedData = useMemo(() => {
-    const filtered = searchQuery
-      ? items.filter((item) =>
-          item.attributes.title
-            .toLowerCase()
-            .includes(
-              typeof searchQuery === 'string'
-                ? searchQuery.toLowerCase()
-                : searchQuery?.text
-                ? searchQuery.text.toLowerCase()
-                : ''
-            )
-        )
-      : items;
-
-    return [...filtered].sort((a, b) => {
-      const aVal = sortField === 'title' ? a.attributes.title ?? '' : a.updatedAt ?? '';
-      const bVal = sortField === 'title' ? b.attributes.title ?? '' : b.updatedAt ?? '';
-      const compareResult = aVal.localeCompare(bVal);
-      return sortDirection === 'asc' ? compareResult : -compareResult;
-    });
-  }, [items, searchQuery, sortField, sortDirection]);
-
-  const pageData = useMemo(() => {
-    const start = pageIndex * pageSize;
-    return sortedData.slice(start, start + pageSize);
-  }, [sortedData, pageIndex, pageSize]);
-
   const columns = useMemo<Array<ColumnDef<DashboardSavedObjectUserContent>>>(
     () => [
       {
@@ -198,64 +161,56 @@ const TanstackTableComponent = ({
     ]
   );
 
-  const table = useReactTable<DashboardSavedObjectUserContent>({
-    data: pageData as DashboardSavedObjectUserContent[],
-    columns: columns as Array<ColumnDef<DashboardSavedObjectUserContent, any>>,
-    getCoreRowModel: getCoreRowModel(),
-    manualPagination: true,
-    pageCount: Math.ceil(sortedData.length / pageSize),
-    state: {
-      pagination: {
-        pageIndex,
-        pageSize,
-      },
+  const sortFunction = useCallback(
+    // @ts-expect-error .
+    (a, b) => {
+      const aVal = sortField === 'title' ? a.attributes.title ?? '' : a.updatedAt ?? '';
+      const bVal = sortField === 'title' ? b.attributes.title ?? '' : b.updatedAt ?? '';
+      const compareResult = aVal.localeCompare(bVal);
+      return sortDirection === 'asc' ? compareResult : -compareResult;
     },
-  });
+    [sortField, sortDirection]
+  );
+
+  const searchFunction = useCallback(
+    (
+      data: DashboardSavedObjectUserContent[],
+      query: QueryType
+    ): DashboardSavedObjectUserContent[] => {
+      const queryText =
+        typeof query === 'string' ? query.toLowerCase() : query?.text?.toLowerCase();
+      if (!queryText) {
+        return data;
+      }
+      return data.filter((item) => item.attributes.title.toLowerCase().includes(queryText));
+    },
+    []
+  );
+
+  const changePage = useCallback((_pageIndex: number) => {
+    setPageIndex(_pageIndex);
+  }, []);
+
+  const changeItemsPerPage = useCallback((_pageSize: number) => {
+    setPageSize(_pageSize);
+    setPageIndex(0);
+  }, []);
 
   return (
-    <>
-      <EuiSearchBar
-        onChange={({ query }) => {
-          if (query) {
-            setSearchQuery(query);
-          }
-        }}
-        box={{ incremental: true }}
-        query={searchQuery}
-        filters={[tableSortSelect]}
-      />
-      <EuiSpacer size="l" />
-      <EuiTable>
-        <EuiSpacer size="s" />
-        <EuiTableBody>
-          {table.getRowModel().rows.map((row) => (
-            <EuiTableRow key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <EuiTableRowCell key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </EuiTableRowCell>
-              ))}
-            </EuiTableRow>
-          ))}
-        </EuiTableBody>
-      </EuiTable>
-      <EuiSpacer size="m" />
-      <EuiFlexGroup justifyContent="center" alignItems="center">
-        <EuiTablePagination
-          pageCount={Math.ceil(sortedData.length / pageSize)}
-          activePage={pageIndex}
-          itemsPerPageOptions={[10, 20, 50]}
-          onChangePage={(_pageIndex) => {
-            setPageIndex(_pageIndex);
-          }}
-          onChangeItemsPerPage={(_pageSize) => {
-            setPageIndex(0);
-            setPageSize(_pageSize);
-          }}
-          itemsPerPage={pageSize}
-        />
-      </EuiFlexGroup>
-    </>
+    <TanstackDataGrid
+      data={items}
+      changePage={changePage}
+      changeItemsPerPage={changeItemsPerPage}
+      columns={columns}
+      searchQuery={searchQuery}
+      setSearchQuery={setSearchQuery}
+      pageSize={pageSize}
+      pageIndex={pageIndex}
+      tableSortSelect={[tableSortSelect]}
+      itemsPerPageOptions={[10, 20, 50]}
+      sortFunction={sortFunction}
+      searchFunction={searchFunction}
+    />
   );
 };
 
