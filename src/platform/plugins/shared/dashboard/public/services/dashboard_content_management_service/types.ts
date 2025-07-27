@@ -11,6 +11,7 @@ import type { Reference } from '@kbn/content-management-utils';
 import type { Query, SerializedSearchSourceFields } from '@kbn/data-plugin/common';
 import type { SavedObjectSaveOpts } from '@kbn/saved-objects-plugin/public';
 
+import type { AccessControl, AccessMode } from '../../dashboard_app/access_control';
 import type { DashboardAttributes, DashboardGetOut } from '../../../server/content_management';
 import type { DashboardDuplicateTitleCheckProps } from './lib/check_for_duplicate_dashboard_title';
 import type {
@@ -28,6 +29,7 @@ export interface DashboardContentManagementService {
   saveDashboardState: (props: SaveDashboardProps) => Promise<SaveDashboardReturn>;
   checkForDuplicateDashboardTitle: (meta: DashboardDuplicateTitleCheckProps) => Promise<boolean>;
   updateDashboardMeta: (props: UpdateDashboardMetaProps) => Promise<void>;
+  changeAccessMode: (props: ChangeAccessModeProps) => Promise<void>;
 }
 
 /**
@@ -48,6 +50,7 @@ export interface LoadDashboardReturn {
   newDashboardCreated?: boolean;
   dashboardId?: string;
   managed?: boolean;
+  accessControl?: AccessControl;
   resolveMeta?: DashboardResolveMeta;
   dashboardInput: DashboardState;
 
@@ -70,6 +73,7 @@ export interface SaveDashboardProps {
   panelReferences?: Reference[];
   searchSourceReferences?: Reference[];
   lastSavedId?: string;
+  accessMode?: AccessMode; // Only used for new dashboard creation
 }
 
 export interface GetDashboardStateReturn {
@@ -97,4 +101,12 @@ export interface FindDashboardsService {
   findById: (id: string) => Promise<FindDashboardsByIdResponse>;
   findByIds: (ids: string[]) => Promise<FindDashboardsByIdResponse[]>;
   findByTitle: (title: string) => Promise<{ id: string } | undefined>;
+}
+
+/**
+ * Types for changing access mode of dashboards
+ */
+export interface ChangeAccessModeProps {
+  ids: string[];
+  accessMode: AccessMode;
 }
