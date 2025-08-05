@@ -7,7 +7,7 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import React, { Dispatch, useCallback, useMemo } from 'react';
+import React, { Dispatch, useCallback, useMemo, useRef } from 'react';
 import { FormattedMessage } from '@kbn/i18n-react';
 import {
   EuiBasicTableColumn,
@@ -22,6 +22,8 @@ import {
   useEuiTheme,
   EuiCode,
   EuiText,
+  EuiTitle,
+  EuiSpacer,
 } from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
 import type { UserContentCommonSchema } from '@kbn/content-management-table-list-view-common';
@@ -31,7 +33,8 @@ import {
   FavoritesEmptyState,
 } from '@kbn/content-management-favorites-public';
 
-import { useServices } from '../services';
+import { TanstackTable } from './tanstack_table';
+import { DateFormatter, useServices } from '../services';
 import type { Action } from '../actions';
 import type {
   State as TableListViewState,
@@ -82,6 +85,9 @@ interface Props<T extends UserContentCommonSchema> extends State<T>, TagManageme
   clearTagSelection: () => void;
   createdByEnabled: boolean;
   favoritesEnabled: boolean;
+  getDetailViewLink?: (entity: T) => string | undefined;
+  getOnClickTitle?: (item: T) => (() => void) | undefined;
+  dateFormatterComp?: DateFormatter;
 }
 
 export function Table<T extends UserContentCommonSchema>({
@@ -113,9 +119,14 @@ export function Table<T extends UserContentCommonSchema>({
   clearTagSelection,
   createdByEnabled,
   favoritesEnabled,
+  getDetailViewLink,
+  getOnClickTitle,
+  dateFormatterComp,
 }: Props<T>) {
   const euiTheme = useEuiTheme();
   const { getTagList, isTaggingEnabled, isKibanaVersioningEnabled } = useServices();
+
+  const tanstackItems = useRef(items);
 
   const renderToolsLeft = useCallback(() => {
     if (!deleteItems || selectedIds.length === 0) {
@@ -377,6 +388,24 @@ export function Table<T extends UserContentCommonSchema>({
           tableCaption={tableCaption}
           css={cssFavoriteHoverWithinEuiTableRow(euiTheme.euiTheme)}
           childrenBetween={favoritesFilter}
+        />
+        <EuiSpacer size="l" />
+        <EuiTitle size="l">
+          <h2>TANSTACK TABLE BELOW</h2>
+        </EuiTitle>
+        <EuiSpacer size="l" />
+        <TanstackTable
+          items={tanstackItems.current}
+          entityName={entityName}
+          isKibanaVersioningEnabled={isKibanaVersioningEnabled}
+          isFavoritesEnabled={favoritesEnabled}
+          getDetailViewLink={getDetailViewLink || (() => undefined)}
+          getOnClickTitle={getOnClickTitle || (() => undefined)}
+          addOrRemoveExcludeTagFilter={addOrRemoveExcludeTagFilter}
+          addOrRemoveIncludeTagFilter={addOrRemoveIncludeTagFilter}
+          dateFormatterComp={dateFormatterComp}
+          hasUpdatedAtMetadata={hasUpdatedAtMetadata}
+          hasRecentlyAccessedMetadata={hasRecentlyAccessedMetadata}
         />
       </TagFilterContextProvider>
     </UserFilterContextProvider>
