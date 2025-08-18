@@ -24,6 +24,7 @@ import {
 } from '@kbn/optimizer-webpack-helpers';
 import { NodeLibsBrowserPlugin } from '@kbn/node-libs-browser-webpack-plugin';
 
+import { addDataPathAttributePlugin } from './add_data_path_attribute_plugin';
 import { Bundle, BundleRemotes, WorkerConfig, parseDllManifest } from '../common';
 import { BundleRemotesPlugin } from './bundle_remotes_plugin';
 import { BundleMetricsPlugin } from './bundle_metrics_plugin';
@@ -253,6 +254,7 @@ export function getWebpackConfig(
               babelrc: false,
               envName: worker.dist ? 'production' : 'development',
               presets: [[BABEL_PRESET, { useTransformRequireDefault: true }]],
+              plugins: [[addDataPathAttributePlugin, { repoRoot: worker.repoRoot }]],
             },
           },
         },
