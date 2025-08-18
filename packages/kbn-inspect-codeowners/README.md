@@ -1,0 +1,1 @@
+# @kbn/inspect-codeowners

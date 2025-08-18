@@ -1,0 +1,6 @@
+{
+  "type": "shared-common",
+  "id": "@kbn/inspect-codeowners",
+  "owner": "@elastic/appex-sharedux",
+  "visibility": "shared"
+}
