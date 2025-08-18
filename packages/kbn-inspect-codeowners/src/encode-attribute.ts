@@ -7,6 +7,21 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-export const encodeAttribute = (value: string): string => {
-  return value;
+import { PATH_DELIMITER, TOKENS } from './constants';
+
+const tokenizePath = (path: string): string =>
+  path
+    .split(PATH_DELIMITER)
+    .map((part) => TOKENS.get(part) ?? part)
+    .join(PATH_DELIMITER);
+
+export const encodeAttribute = (path: string): string => {
+  const tokenizedPath = tokenizePath(path);
+
+  const utf8Bytes = new TextEncoder().encode(tokenizedPath);
+  const binaryString = Array.from(utf8Bytes)
+    .map((b) => String.fromCharCode(b))
+    .join('');
+
+  return btoa(binaryString);
 };

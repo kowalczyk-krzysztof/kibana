@@ -12,6 +12,8 @@ export {
   encodeAttribute,
   decodeAttribute,
   DATA_PATH_ATTRIBUTE_KEY,
+  TOKENS,
+  PATH_DELIMITER,
 } from './src';
 
 export type { PluginOptions, PluginState, AddDataPathAttributeOptions } from './src';

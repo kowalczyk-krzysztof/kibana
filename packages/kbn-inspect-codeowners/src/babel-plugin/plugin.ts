@@ -10,7 +10,7 @@
 import path from 'path';
 import type { JSXAttribute } from '@babel/types';
 import type { AddDataPathAttributeOptions } from './types';
-import { DATA_PATH_ATTRIBUTE_KEY } from '../constants';
+import { DATA_PATH_ATTRIBUTE_KEY, PATH_DELIMITER } from '../constants';
 import { encodeAttribute } from '../encode-attribute';
 
 export const addDataPathAttributePlugin = ({
@@ -42,16 +42,13 @@ export const addDataPathAttributePlugin = ({
 
   // Compute relative file path
   const filename = state.file?.opts?.filename || '';
-  const repoRoot = state.opts.repoRoot || process.cwd();
-  const relativePath = path.relative(repoRoot, filename).replace(/\\/g, '/');
-
-  // Get line number
-  const line = node.loc?.start?.line || 0;
+  const repoRoot = state.opts.repoRoot;
+  const relativePath = path.relative(repoRoot, filename).replace(/\\/g, PATH_DELIMITER);
 
   node.attributes.push(
     babel.jsxAttribute(
       babel.jsxIdentifier(DATA_PATH_ATTRIBUTE_KEY),
-      babel.stringLiteral(encodeAttribute(`${relativePath}:${line}`))
+      babel.stringLiteral(encodeAttribute(`${relativePath}${PATH_DELIMITER}${name || ''}`))
     )
   );
 };

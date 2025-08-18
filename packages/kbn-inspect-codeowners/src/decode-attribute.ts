@@ -7,6 +7,27 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-export const decodeAttribute = (value: string): string => {
-  return value;
+import { PATH_DELIMITER, TOKENS } from './constants';
+
+const reverseTokens = () => {
+  const reverseMap = new Map<string, string>();
+  TOKENS.forEach((value, key) => {
+    reverseMap.set(value, key);
+  });
+  return reverseMap;
+};
+
+const detokenizePath = (tokenizedPath: string): string => {
+  return tokenizedPath
+    .split(PATH_DELIMITER)
+    .map((part) => reverseTokens().get(part) ?? part)
+    .join(PATH_DELIMITER);
+};
+
+export const decodeAttribute = (encodedBase64: string): string => {
+  const binaryString = atob(encodedBase64);
+  const bytes = Uint8Array.from(binaryString, (c) => c.charCodeAt(0));
+  const decodedString = new TextDecoder().decode(bytes);
+
+  return detokenizePath(decodedString);
 };

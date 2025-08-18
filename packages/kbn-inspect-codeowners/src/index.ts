@@ -10,5 +10,5 @@
 export { addDataPathAttributePlugin } from './babel-plugin';
 export { encodeAttribute } from './encode-attribute';
 export { decodeAttribute } from './decode-attribute';
-export { DATA_PATH_ATTRIBUTE_KEY } from './constants';
+export { DATA_PATH_ATTRIBUTE_KEY, TOKENS, PATH_DELIMITER } from './constants';
 export type { PluginOptions, PluginState, AddDataPathAttributeOptions } from './babel-plugin';

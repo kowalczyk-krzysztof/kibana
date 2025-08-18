@@ -12,7 +12,7 @@ import type { JSXOpeningElement } from '@babel/types';
 import type * as BabelTypes from '@babel/types';
 
 export interface PluginOptions {
-  repoRoot?: string;
+  repoRoot: string;
 }
 
 export interface PluginState extends PluginPass {
