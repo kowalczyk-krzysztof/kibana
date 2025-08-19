@@ -7,14 +7,4 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-export { addDataPathAttributePlugin, getComponentName } from './babel-plugin';
-export { encodeAttribute } from './encode-attribute';
-export { decodeAttribute } from './decode-attribute';
-export { DATA_PATH_ATTRIBUTE_KEY, TOKENS, PATH_DELIMITER } from './constants';
-export type {
-  PluginOptions,
-  PluginState,
-  AddDataPathAttributeOptions,
-  GetComponentNameOptions,
-} from './babel-plugin';
-export { InspectButton } from './components';
+export { InspectButton } from './inspect-button';

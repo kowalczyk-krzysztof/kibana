@@ -14,6 +14,8 @@ import React from 'react';
 import moment from 'moment';
 import { PluginInitializerContext, CoreSetup, CoreStart, Plugin } from '@kbn/core/public';
 import { KibanaRenderContextProvider } from '@kbn/react-kibana-context-render';
+import { toMountPoint } from '@kbn/react-kibana-mount';
+import { InspectButton } from '@kbn/inspect-codeowners';
 import { NewsfeedPluginBrowserConfig, NewsfeedPluginStartDependencies } from './types';
 import { NewsfeedNavButton } from './components/newsfeed_header_nav_button';
 import { getApi, NewsfeedApi, NewsfeedApiEndpoint } from './lib/api';
@@ -52,6 +54,11 @@ export class NewsfeedPublicPlugin
     core.chrome.navControls.registerRight({
       order: 1000,
       mount: (target) => this.mount(api, target, core),
+    });
+
+    core.chrome.navControls.registerRight({
+      order: 1002,
+      mount: toMountPoint(<InspectButton />, core.rendering),
     });
 
     return {

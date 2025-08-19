@@ -12,6 +12,7 @@ import type { JSXAttribute } from '@babel/types';
 import type { AddDataPathAttributeOptions } from './types';
 import { DATA_PATH_ATTRIBUTE_KEY, PATH_DELIMITER } from '../constants';
 import { encodeAttribute } from '../encode-attribute';
+import { getComponentName } from './get_component_name';
 
 export const addDataPathAttributePlugin = ({
   babel,
@@ -45,10 +46,12 @@ export const addDataPathAttributePlugin = ({
   const repoRoot = state.opts.repoRoot;
   const relativePath = path.relative(repoRoot, filename).replace(/\\/g, PATH_DELIMITER);
 
+  const componentName = getComponentName({ babel, nodePath });
+
   node.attributes.push(
     babel.jsxAttribute(
       babel.jsxIdentifier(DATA_PATH_ATTRIBUTE_KEY),
-      babel.stringLiteral(encodeAttribute(`${relativePath}${PATH_DELIMITER}${name || ''}`))
+      babel.stringLiteral(encodeAttribute(`${relativePath}${PATH_DELIMITER}${componentName || ''}`))
     )
   );
 };

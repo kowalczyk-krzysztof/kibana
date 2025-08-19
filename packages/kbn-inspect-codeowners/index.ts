@@ -9,11 +9,18 @@
 
 export {
   addDataPathAttributePlugin,
+  getComponentName,
   encodeAttribute,
   decodeAttribute,
   DATA_PATH_ATTRIBUTE_KEY,
   TOKENS,
   PATH_DELIMITER,
+  InspectButton,
 } from './src';
 
-export type { PluginOptions, PluginState, AddDataPathAttributeOptions } from './src';
+export type {
+  PluginOptions,
+  PluginState,
+  AddDataPathAttributeOptions,
+  GetComponentNameOptions,
+} from './src';

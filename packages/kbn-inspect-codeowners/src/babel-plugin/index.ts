@@ -8,4 +8,10 @@
  */
 
 export { addDataPathAttributePlugin } from './plugin';
-export type { PluginOptions, PluginState, AddDataPathAttributeOptions } from './types';
+export { getComponentName } from './get_component_name';
+export type {
+  PluginOptions,
+  PluginState,
+  AddDataPathAttributeOptions,
+  GetComponentNameOptions,
+} from './types';

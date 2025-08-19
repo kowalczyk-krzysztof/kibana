@@ -24,3 +24,8 @@ export interface AddDataPathAttributeOptions {
   nodePath: NodePath<JSXOpeningElement>;
   state: PluginState;
 }
+
+export interface GetComponentNameOptions<T = any> {
+  babel: typeof BabelTypes;
+  nodePath: NodePath<T>;
+}
