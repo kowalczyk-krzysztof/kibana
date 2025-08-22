@@ -9,7 +9,6 @@
 
 import React from 'react';
 import { toMountPoint } from '@kbn/react-kibana-mount';
-import { capturePreviewScreenshot } from '../../../../packages/shared/shared-ux/preview_screenshots';
 import { setElementHighlight } from './utils';
 import type { GetComponentDataOptions, InspectComponentResponse } from './types';
 import { flyoutOptions, InspectFlyout } from './inspect';
@@ -32,12 +31,12 @@ export const getComponentData = async ({
       });
 
     const { width: maxWidth, height: maxHeight } = target.getBoundingClientRect();
-    const image = await capturePreviewScreenshot({
-      target,
-      maxWidth,
-      maxHeight,
-      aspectRatio: maxHeight / maxWidth,
-    });
+    // const image = await capturePreviewScreenshot({
+    //   target,
+    //   maxWidth,
+    //   maxHeight,
+    //   aspectRatio: maxHeight / maxWidth,
+    // });
 
     const componentData = {
       ...fileData,
@@ -46,7 +45,7 @@ export const getComponentData = async ({
       relativePath,
       codeowners,
       baseFileName,
-      image,
+      image: undefined,
       sourceComponent,
     };
 
