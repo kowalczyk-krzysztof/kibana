@@ -22,5 +22,7 @@
     "@kbn/i18n-react",
     "@kbn/config-schema",
     "@kbn/repo-info",
+    "@kbn/preview-screenshots",
+    "@kbn/ambient-ui-types"
   ]
 }
