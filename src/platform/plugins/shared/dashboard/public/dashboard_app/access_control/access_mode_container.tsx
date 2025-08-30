@@ -46,7 +46,7 @@ const selectOptions = [
 ];
 
 interface Props {
-  onChangeAccessMode: (value: AccessMode) => void;
+  onChangeAccessMode: (value: AccessMode) => Promise<void>;
   accessControl?: AccessControl;
 }
 
@@ -56,6 +56,7 @@ export const AccessModeContainer = ({ onChangeAccessMode, accessControl }: Props
     createdBy: 'TODO',
   });
   const [spaceName, setSpaceName] = useState('');
+  const [isUpdatingPermissions, setIsUpdatingPermissions] = useState(false);
 
   useEffect(() => {
     spacesService?.getActiveSpace().then((activeSpace) => {
@@ -65,8 +66,10 @@ export const AccessModeContainer = ({ onChangeAccessMode, accessControl }: Props
 
   const selectId = useGeneratedHtmlId({ prefix: 'accessControlSelect' });
 
-  const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    onChangeAccessMode(e.target.value as AccessMode);
+  const handleSelectChange = async (e: ChangeEvent<HTMLSelectElement>) => {
+    setIsUpdatingPermissions(true);
+    await onChangeAccessMode(e.target.value as AccessMode);
+    setIsUpdatingPermissions(false);
   };
 
   return (
@@ -126,6 +129,8 @@ export const AccessModeContainer = ({ onChangeAccessMode, accessControl }: Props
             {isCurrentUserAuthor && (
               <EuiSelect
                 id={selectId}
+                isLoading={isUpdatingPermissions}
+                disabled={isUpdatingPermissions}
                 data-test-subj="dashboardAccessModeSelect"
                 options={selectOptions}
                 defaultValue={accessControl?.accessMode ?? 'default'}

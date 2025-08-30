@@ -30,7 +30,7 @@ import type { LocatorPublic } from '@kbn/share-plugin/common';
 
 import type { DashboardLocatorParams } from '../../../../common';
 import { getDashboardBackupService } from '../../../services/dashboard_backup_service';
-import { dataService, shareService } from '../../../services/kibana_services';
+import { dataService, shareService, coreServices } from '../../../services/kibana_services';
 import { getDashboardCapabilities } from '../../../utils/get_dashboard_capabilities';
 import { DASHBOARD_STATE_STORAGE_KEY } from '../../../utils/urls';
 import { shareModalStrings } from '../../_dashboard_app_strings';
@@ -78,9 +78,17 @@ export function ShowShareModal({
     if (!savedObjectId) return;
     try {
       await changeAccessMode(accessMode);
+      coreServices.notifications.toasts.addSuccess({
+        title: i18n.translate('dashboard.share.changeAccessMode.success.title', {
+          defaultMessage: 'Permissions updated',
+        }),
+      });
     } catch (error) {
-      // TODO: Add proper error handling with toast notifications
-      throw error;
+      coreServices.notifications.toasts.addError(error as Error, {
+        title: i18n.translate('dashboard.share.changeAccessMode.error.title', {
+          defaultMessage: 'Failed to update permissions',
+        }),
+      });
     }
   };
 
