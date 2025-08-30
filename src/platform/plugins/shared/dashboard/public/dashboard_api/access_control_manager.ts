@@ -8,7 +8,7 @@
  */
 
 import { BehaviorSubject } from 'rxjs';
-import type { AccessControl } from '../dashboard_app/access_control';
+import type { AccessControl, AccessMode } from '../dashboard_app/access_control';
 import { getDashboardContentManagementService } from '../services/dashboard_content_management_service';
 import type { LoadDashboardReturn } from '../services/dashboard_content_management_service/types';
 
@@ -21,7 +21,7 @@ export function initializeAccessControlManager(
     accessMode: savedObjectResult?.accessControl?.accessMode,
   });
 
-  async function changeAccessMode(accessMode: 'read_only' | 'default') {
+  async function changeAccessMode(accessMode: AccessMode) {
     const dashboardId = savedObjectId$?.value;
     if (!dashboardId) {
       throw new Error('Cannot change access mode: Dashboard ID is not available');

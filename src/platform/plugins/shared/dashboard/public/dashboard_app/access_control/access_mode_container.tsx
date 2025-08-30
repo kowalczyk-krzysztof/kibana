@@ -46,14 +46,15 @@ const selectOptions = [
 ];
 
 interface Props {
-  onChangeAccessMode: (value: AccessMode) => Promise<void>;
+  onChangeAccessMode: (value: AccessMode) => Promise<void> | void;
   accessControl?: AccessControl;
+  createdBy?: string;
 }
 
-export const AccessModeContainer = ({ onChangeAccessMode, accessControl }: Props) => {
-  const { isCurrentUserAuthor, isInEditAccessMode } = useAccessControl({
+export const AccessModeContainer = ({ onChangeAccessMode, accessControl, createdBy }: Props) => {
+  const { canManageAccessControl, isInEditAccessMode } = useAccessControl({
     accessControl,
-    createdBy: 'TODO',
+    createdBy,
   });
   const [spaceName, setSpaceName] = useState('');
   const [isUpdatingPermissions, setIsUpdatingPermissions] = useState(false);
@@ -98,7 +99,7 @@ export const AccessModeContainer = ({ onChangeAccessMode, accessControl }: Props
                   />
                 </EuiText>
               </EuiFlexItem>
-              {!isCurrentUserAuthor && (
+              {!canManageAccessControl && (
                 <EuiFlexItem
                   grow={false}
                   data-test-subj="dashboardAccessModeContainerDescriptionTooltip"
@@ -126,7 +127,7 @@ export const AccessModeContainer = ({ onChangeAccessMode, accessControl }: Props
             </EuiFlexGroup>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
-            {isCurrentUserAuthor && (
+            {canManageAccessControl && (
               <EuiSelect
                 id={selectId}
                 isLoading={isUpdatingPermissions}

@@ -49,6 +49,7 @@ export interface ShowShareModalProps {
   anchorElement: HTMLElement;
   canSave: boolean;
   accessControl?: AccessControl;
+  createdBy?: string;
   saveDashboard: () => Promise<SaveDashboardReturn | undefined>;
   changeAccessMode: (accessMode: AccessMode) => Promise<void>;
 }
@@ -69,6 +70,7 @@ export function ShowShareModal({
   dashboardTitle,
   canSave,
   accessControl,
+  createdBy,
   saveDashboard,
   changeAccessMode,
 }: ShowShareModalProps) {
@@ -76,6 +78,7 @@ export function ShowShareModal({
 
   const handleChangeAccessMode = async (accessMode: AccessMode) => {
     if (!savedObjectId) return;
+
     try {
       await changeAccessMode(accessMode);
       coreServices.notifications.toasts.addSuccess({
@@ -84,7 +87,7 @@ export function ShowShareModal({
         }),
       });
     } catch (error) {
-      coreServices.notifications.toasts.addError(error as Error, {
+      coreServices.notifications.toasts.addError(error instanceof Error ? error.message : error, {
         title: i18n.translate('dashboard.share.changeAccessMode.error.title', {
           defaultMessage: 'Failed to update permissions',
         }),

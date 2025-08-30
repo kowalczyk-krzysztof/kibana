@@ -50,9 +50,10 @@ export interface LoadDashboardReturn {
   newDashboardCreated?: boolean;
   dashboardId?: string;
   managed?: boolean;
-  accessControl?: AccessControl;
   resolveMeta?: DashboardResolveMeta;
   dashboardInput: DashboardState;
+  accessControl?: AccessControl;
+  createdBy?: string;
 
   /**
    * Raw references returned directly from the Dashboard saved object. These

@@ -13,11 +13,11 @@ import { coreServices } from '../../services/kibana_services';
 
 interface UseAccessControl {
   accessControl?: AccessControl;
-  createdBy: string;
+  createdBy?: string;
 }
 
 export const useAccessControl = ({ accessControl, createdBy }: UseAccessControl) => {
-  const [isCurrentUserAuthor, setIsCurrentUserAuthor] = useState(false);
+  const [canManageAccessControl, setCanManageAccessControl] = useState(false);
   const [isInEditAccessMode, setIsInEditAccessMode] = useState(false);
 
   useEffect(() => {
@@ -27,27 +27,38 @@ export const useAccessControl = ({ accessControl, createdBy }: UseAccessControl)
         accessControl.accessMode === 'default'
     );
 
-    coreServices.security.authc.getCurrentUser().then((user) => {
-      const userId = user.profile_uid;
-      /* TODO: Replace this with something a response from the server:
-      const privileges = { kibana: actions.savedObject.get(type, 'manage_access_control')}; // your specific type ('dashboard' in this case)
-      const { hasAllRequested } = await checkPrivilegesWithRequest(req).globally(privileges);
-      */
-      const isAdmin = user.roles.includes('superuser');
+    const checkUserPrivileges = async () => {
+      try {
+        const { isGloballyAuthorized } = await coreServices.http.get<{
+          isGloballyAuthorized: boolean;
+        }>('/api/dashboards/dashboard/access-control/global-authorization', {
+          query: { apiVersion: '1' },
+        });
 
-      if (!accessControl) {
-        const isAuthor = userId === createdBy;
-        setIsCurrentUserAuthor(isAdmin || isAuthor);
-        return;
+        if (isGloballyAuthorized) {
+          setCanManageAccessControl(true);
+          return;
+        }
+
+        const user = await coreServices.security.authc.getCurrentUser();
+        const userId = user.profile_uid;
+
+        if (!accessControl?.owner) {
+          setCanManageAccessControl(userId === createdBy);
+          return;
+        }
+
+        setCanManageAccessControl(userId === accessControl.owner);
+      } catch (error) {
+        setCanManageAccessControl(false);
       }
+    };
 
-      const isOwner = userId === accessControl.owner;
-      setIsCurrentUserAuthor(isAdmin || isOwner);
-    });
+    checkUserPrivileges();
   }, [accessControl, createdBy]);
 
   return {
-    isCurrentUserAuthor,
+    canManageAccessControl,
     isInEditAccessMode,
   };
 };

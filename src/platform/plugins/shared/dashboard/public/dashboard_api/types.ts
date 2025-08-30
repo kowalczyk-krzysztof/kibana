@@ -158,6 +158,7 @@ export type DashboardApi = CanExpandPanels &
     unifiedSearchFilters$: PublishesUnifiedSearch['filters$'];
     accessControl$: PublishingSubject<AccessControl>;
     changeAccessMode: (accessMode: AccessMode) => Promise<void>;
+    createdBy?: string;
   };
 
 export interface DashboardInternalApi {

@@ -52,22 +52,22 @@ export const useDashboardMenuItems = ({
     );
 
   const disableTopNav = isSaveInProgress || hasOverlays;
-  const { isCurrentUserAuthor, isInEditAccessMode } = useAccessControl({
+  const { canManageAccessControl, isInEditAccessMode } = useAccessControl({
     accessControl,
-    createdBy: 'TODO',
+    createdBy: dashboardApi.createdBy,
   });
 
   const isEditButtonDisabled = useMemo(() => {
     if (disableTopNav) return true;
-    if (isCurrentUserAuthor) return false;
+    if (canManageAccessControl) return false;
     return !isInEditAccessMode;
-  }, [disableTopNav, isInEditAccessMode, isCurrentUserAuthor]);
+  }, [disableTopNav, isInEditAccessMode, canManageAccessControl]);
 
   const isQuickSaveButtonDisabled = useMemo(() => {
     if (disableTopNav || !hasUnsavedChanges) return true;
-    if (isCurrentUserAuthor) return false;
+    if (canManageAccessControl) return false;
     return !isInEditAccessMode;
-  }, [disableTopNav, hasUnsavedChanges, isCurrentUserAuthor, isInEditAccessMode]);
+  }, [disableTopNav, hasUnsavedChanges, canManageAccessControl, isInEditAccessMode]);
 
   /**
    * Show the dashboard's "Confirm reset changes" modal. If confirmed:
@@ -144,7 +144,7 @@ export const useDashboardMenuItems = ({
         anchorElement,
         savedObjectId: lastSavedId,
         isDirty: Boolean(hasUnsavedChanges),
-        canSave: (isCurrentUserAuthor || isInEditAccessMode) && Boolean(hasUnsavedChanges),
+        canSave: (canManageAccessControl || isInEditAccessMode) && Boolean(hasUnsavedChanges),
         accessControl,
         saveDashboard: saveFromShareModal,
         changeAccessMode: dashboardApi.changeAccessMode,
@@ -155,7 +155,7 @@ export const useDashboardMenuItems = ({
       hasUnsavedChanges,
       lastSavedId,
       isInEditAccessMode,
-      isCurrentUserAuthor,
+      canManageAccessControl,
       accessControl,
       saveFromShareModal,
       dashboardApi.changeAccessMode,
