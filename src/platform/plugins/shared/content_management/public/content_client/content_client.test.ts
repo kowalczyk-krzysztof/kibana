@@ -211,9 +211,8 @@ describe('#changeAccessMode', () => {
   it('calls rpcClient.changeAccessMode with input and returns output', async () => {
     const { crudClient, contentClient } = setup();
     const input: ChangeAccessModeIn = {
-      objects: [{ type: 'testType', id: 'test-id' }],
+      objects: [{ contentTypeId: 'testType', id: 'test-id' }],
       options: { accessMode: 'read_only' },
-      version: 1,
     };
     const output = { objects: [{ type: 'testType', id: 'test-id' }] };
     // @ts-ignore

@@ -16,12 +16,11 @@ export const changeAccessMode = async ({
   accessMode,
 }: ChangeAccessModeProps): Promise<void> => {
   const objects = ids.map((id) => ({
-    type: DASHBOARD_CONTENT_ID,
+    contentTypeId: DASHBOARD_CONTENT_ID,
     id,
   }));
 
   await contentManagementService.client.changeAccessMode({
-    version: 1,
     objects,
     options: {
       accessMode,

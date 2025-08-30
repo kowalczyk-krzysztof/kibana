@@ -16,17 +16,18 @@
  */
 
 import { schema } from '@kbn/config-schema';
+import type { Version } from '@kbn/object-versioning';
 import type { ProcedureSchemas } from './types';
 import { versionSchema } from './constants';
 
 export const changeAccessModeSchemas: ProcedureSchemas = {
   in: schema.object(
     {
-      version: versionSchema,
+      version: schema.maybe(versionSchema),
       objects: schema.arrayOf(
         schema.object(
           {
-            type: schema.string(),
+            contentTypeId: schema.string(),
             id: schema.string(),
           },
           { unknowns: 'forbid' }
@@ -63,9 +64,9 @@ export const changeAccessModeSchemas: ProcedureSchemas = {
 };
 
 export interface ChangeAccessModeIn {
-  version: number;
+  version?: Version;
   objects: Array<{
-    type: string;
+    contentTypeId: string;
     id: string;
   }>;
   options: {
@@ -80,4 +81,11 @@ export interface ChangeAccessModeResult {
       id: string;
     } & { error?: { error: string; message: string; statusCode: number } }
   >;
+}
+
+export type AccessMode = 'read_only' | 'default';
+
+export interface AccessControl {
+  owner?: string;
+  accessMode?: AccessMode;
 }

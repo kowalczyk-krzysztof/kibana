@@ -48,9 +48,8 @@ describe('RpcClient', () => {
     await rpcClient.search({ contentTypeId: 'foo', query: {} });
     await rpcClient.mSearch({ contentTypes: [{ contentTypeId: 'foo' }], query: {} });
     await rpcClient.changeAccessMode({
-      objects: [{ type: 'foo', id: '123' }],
+      objects: [{ contentTypeId: 'foo', id: '123' }],
       options: { accessMode: 'default' },
-      version: 1,
     });
 
     Object.values(proceduresSpys).forEach(({ name, spy }) => {
