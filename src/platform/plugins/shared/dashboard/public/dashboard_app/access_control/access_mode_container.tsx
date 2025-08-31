@@ -9,6 +9,7 @@
 
 import React, { type ChangeEvent, useState, useEffect } from 'react';
 import {
+  EuiBadge,
   EuiFlexGroup,
   EuiFlexItem,
   EuiIconTip,
@@ -52,7 +53,7 @@ interface Props {
 }
 
 export const AccessModeContainer = ({ onChangeAccessMode, accessControl, createdBy }: Props) => {
-  const { canManageAccessControl, isInEditAccessMode } = useAccessControl({
+  const { canManageAccessControl, isInEditAccessMode, authorName } = useAccessControl({
     accessControl,
     createdBy,
   });
@@ -92,37 +93,55 @@ export const AccessModeContainer = ({ onChangeAccessMode, accessControl, created
               <EuiFlexItem grow={false}>
                 <EuiText size="s">
                   <FormattedMessage
-                    id="dashboard.accessControl.accessMode.container.description.text"
-                    defaultMessage="Everybody in the space {spaceName}{editMode}"
-                    // TODO: Space name should be a badge with security icon
-                    values={{ spaceName, editMode: isInEditAccessMode ? ' can edit' : ' can view' }}
+                    id="dashboard.accessControl.accessMode.container.description.content"
+                    defaultMessage="Everybody in the space"
                   />
                 </EuiText>
               </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiBadge iconType="logoSecurity" color="hollow">
+                  {spaceName}
+                </EuiBadge>
+              </EuiFlexItem>
               {!canManageAccessControl && (
-                <EuiFlexItem
-                  grow={false}
-                  data-test-subj="dashboardAccessModeContainerDescriptionTooltip"
-                >
-                  <EuiIconTip
-                    type="info"
-                    content={
+                <>
+                  <EuiFlexItem grow={false}>
+                    <EuiText size="s">
                       <FormattedMessage
-                        id="dashboard.accessControl.accessMode.container.description.tooltipContent"
-                        // TODO: Replace author with creator name using UserProfileService.bulkGet
-                        defaultMessage="Only author can edit permissions"
+                        id="dashboard.accessControl.accessMode.container.description.permissionType"
+                        defaultMessage="can {permissionType}"
+                        values={{
+                          permissionType: isInEditAccessMode ? 'edit' : 'view',
+                        }}
                       />
-                    }
-                    aria-label={i18n.translate(
-                      'dashboard.accessControl.accessMode.container.description.tooltipAriaLabel',
-                      {
-                        // TODO: Replace author with creator name using UserProfileService.bulkGet
-                        defaultMessage: 'Only author can edit permissions',
+                    </EuiText>{' '}
+                  </EuiFlexItem>
+                  <EuiFlexItem
+                    grow={false}
+                    data-test-subj="dashboardAccessModeContainerDescriptionTooltip"
+                  >
+                    <EuiIconTip
+                      type="info"
+                      content={
+                        <FormattedMessage
+                          id="dashboard.accessControl.accessMode.container.description.tooltipContent"
+                          defaultMessage="Only {author} can edit permissions"
+                          values={{ author: authorName || 'author' }}
+                        />
                       }
-                    )}
-                    position="bottom"
-                  />
-                </EuiFlexItem>
+                      aria-label={i18n.translate(
+                        'dashboard.accessControl.accessMode.container.description.tooltipAriaLabel',
+                        {
+                          defaultMessage: 'Only {authorName} can edit permissions',
+                          values: {
+                            authorName: authorName || 'author',
+                          },
+                        }
+                      )}
+                      position="bottom"
+                    />
+                  </EuiFlexItem>
+                </>
               )}
             </EuiFlexGroup>
           </EuiFlexItem>
@@ -139,7 +158,7 @@ export const AccessModeContainer = ({ onChangeAccessMode, accessControl, created
                 aria-label={i18n.translate(
                   'dashboard.accessControl.accessMode.container.select.ariaLabel',
                   {
-                    defaultMessage: 'Modify access control for the dashboard',
+                    defaultMessage: 'Modify access acess mode for the dashboard',
                   }
                 )}
               />

@@ -19,6 +19,7 @@ interface UseAccessControl {
 export const useAccessControl = ({ accessControl, createdBy }: UseAccessControl) => {
   const [canManageAccessControl, setCanManageAccessControl] = useState(false);
   const [isInEditAccessMode, setIsInEditAccessMode] = useState(false);
+  const [authorName, setAuthorName] = useState('');
 
   useEffect(() => {
     setIsInEditAccessMode(
@@ -26,7 +27,9 @@ export const useAccessControl = ({ accessControl, createdBy }: UseAccessControl)
         accessControl.accessMode === undefined ||
         accessControl.accessMode === 'default'
     );
+  }, [accessControl]);
 
+  useEffect(() => {
     const checkUserPrivileges = async () => {
       try {
         const { isGloballyAuthorized } = await coreServices.http.get<{
@@ -55,10 +58,37 @@ export const useAccessControl = ({ accessControl, createdBy }: UseAccessControl)
     };
 
     checkUserPrivileges();
-  }, [accessControl, createdBy]);
+  }, [createdBy, accessControl?.owner]);
+
+  useEffect(() => {
+    const creatorId = accessControl?.owner || createdBy;
+    if (!creatorId) {
+      return;
+    }
+
+    const getCreatorName = async () => {
+      try {
+        const profiles = await coreServices.userProfile.bulkGet({
+          uids: new Set([creatorId]),
+        });
+        const autorProfile = profiles[0].user;
+
+        if (autorProfile) {
+          setAuthorName(autorProfile.username);
+        } else {
+          setAuthorName('');
+        }
+      } catch (error) {
+        setAuthorName('');
+      }
+    };
+
+    getCreatorName();
+  }, [createdBy, accessControl?.owner]);
 
   return {
     canManageAccessControl,
     isInEditAccessMode,
+    authorName,
   };
 };

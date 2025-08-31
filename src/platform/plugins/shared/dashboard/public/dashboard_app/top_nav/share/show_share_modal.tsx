@@ -341,6 +341,7 @@ export function ShowShareModal({
       accessModeContainer: (
         <AccessModeContainer
           accessControl={accessControl}
+          createdBy={createdBy}
           onChangeAccessMode={handleChangeAccessMode}
         />
       ),
