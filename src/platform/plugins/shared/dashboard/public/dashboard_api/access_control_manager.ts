@@ -8,9 +8,10 @@
  */
 
 import { BehaviorSubject } from 'rxjs';
-import type { AccessControl, AccessMode } from '../dashboard_app/access_control';
+
 import { getDashboardContentManagementService } from '../services/dashboard_content_management_service';
 import type { LoadDashboardReturn } from '../services/dashboard_content_management_service/types';
+import type { AccessControl, AccessMode } from '../dashboard_app/access_control/types';
 
 export function initializeAccessControlManager(
   savedObjectResult?: LoadDashboardReturn,
@@ -33,14 +34,12 @@ export function initializeAccessControlManager(
         accessMode,
       });
 
-      // Update the local state
       const currentAccessControl = accessControl$.value;
       accessControl$.next({
         ...currentAccessControl,
         accessMode,
       });
     } catch (error) {
-      // Re-throw the error to let the caller handle it
       throw error;
     }
   }

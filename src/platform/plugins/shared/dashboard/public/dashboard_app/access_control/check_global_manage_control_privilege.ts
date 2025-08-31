@@ -7,5 +7,14 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-export { AccessModeContainer } from './access_mode_container';
-export type { AccessControl, AccessMode } from './types';
+import { coreServices } from '../../services/kibana_services';
+
+export const checkGlobalManageControlPrivilege = async () => {
+  const { isGloballyAuthorized } = await coreServices.http.get<{
+    isGloballyAuthorized: boolean;
+  }>('/api/dashboards/dashboard/access-control/global-authorization', {
+    query: { apiVersion: '1' },
+  });
+
+  return isGloballyAuthorized;
+};

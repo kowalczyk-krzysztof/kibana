@@ -35,9 +35,10 @@ import { getDashboardCapabilities } from '../../../utils/get_dashboard_capabilit
 import { DASHBOARD_STATE_STORAGE_KEY } from '../../../utils/urls';
 import { shareModalStrings } from '../../_dashboard_app_strings';
 import { dashboardUrlParams } from '../../dashboard_router';
-import { AccessModeContainer } from '../../access_control';
+
 import type { AccessControl, AccessMode } from '../../access_control/types';
 import type { SaveDashboardReturn } from '../../../services/dashboard_content_management_service/types';
+import { AccessModeContainer } from '../../access_control/access_mode_container';
 
 const showFilterBarId = 'showFilterBar';
 

@@ -33,6 +33,6 @@ Integration Tests*, which execute tests against a real Elasticsearch instance.
 
 Run integrations tests with:
 
-```bash
+```
 yarn test:jest_integration src/platform/plugins/shared/content_management
 ```

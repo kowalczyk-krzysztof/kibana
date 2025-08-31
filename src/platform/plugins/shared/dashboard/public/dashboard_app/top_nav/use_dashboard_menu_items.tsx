@@ -52,7 +52,7 @@ export const useDashboardMenuItems = ({
     );
 
   const disableTopNav = isSaveInProgress || hasOverlays;
-  const { canManageAccessControl, isInEditAccessMode } = useAccessControl({
+  const { canManageAccessControl, isInEditAccessMode, authorName } = useAccessControl({
     accessControl,
     createdBy: dashboardApi.createdBy,
   });
@@ -164,6 +164,16 @@ export const useDashboardMenuItems = ({
     ]
   );
 
+  const getEditTooltip = useCallback(() => {
+    if (dashboardApi.isManaged) {
+      return topNavStrings.edit.managedDashboardTooltip;
+    }
+    if (isInEditAccessMode || canManageAccessControl) {
+      return undefined;
+    }
+    return topNavStrings.edit.readOnlyTooltip(authorName);
+  }, [isInEditAccessMode, canManageAccessControl, authorName, dashboardApi.isManaged]);
+
   /**
    * Register all of the top nav configs that can be used by dashboard.
    */
@@ -198,7 +208,7 @@ export const useDashboardMenuItems = ({
           dashboardApi.clearOverlays();
         },
         disableButton: isEditButtonDisabled,
-        tooltip: isInEditAccessMode ? undefined : topNavStrings.edit.readOnlyTooltip,
+        tooltip: getEditTooltip(),
       } as TopNavMenuData,
 
       quickSave: {
@@ -287,6 +297,7 @@ export const useDashboardMenuItems = ({
     isEditButtonDisabled,
     isInEditAccessMode,
     isQuickSaveButtonDisabled,
+    getEditTooltip,
   ]);
 
   const resetChangesMenuItem = useMemo(() => {

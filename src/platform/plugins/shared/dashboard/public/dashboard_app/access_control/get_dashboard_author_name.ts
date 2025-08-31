@@ -7,15 +7,16 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import type { AccessMode } from '../../dashboard_app/access_control/types';
+import { coreServices } from '../../services/kibana_services';
 
-export interface DashboardSaveOptions {
-  newTitle: string;
-  newTags?: string[];
-  newDescription: string;
-  newCopyOnSave: boolean;
-  newTimeRestore: boolean;
-  newAccessMode?: AccessMode;
-  onTitleDuplicate: () => void;
-  isTitleDuplicateConfirmed: boolean;
-}
+export const getDashboardAuthorName = async (authorId: string) => {
+  try {
+    const profiles = await coreServices.userProfile.bulkGet({
+      uids: new Set([authorId]),
+    });
+
+    return profiles[0].user.username || null;
+  } catch (error) {
+    return null;
+  }
+};

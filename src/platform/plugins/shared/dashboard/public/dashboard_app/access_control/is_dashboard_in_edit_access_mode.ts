@@ -7,15 +7,9 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import type { AccessMode } from '../../dashboard_app/access_control/types';
+import type { AccessControl } from './types';
 
-export interface DashboardSaveOptions {
-  newTitle: string;
-  newTags?: string[];
-  newDescription: string;
-  newCopyOnSave: boolean;
-  newTimeRestore: boolean;
-  newAccessMode?: AccessMode;
-  onTitleDuplicate: () => void;
-  isTitleDuplicateConfirmed: boolean;
-}
+export const isDashboardInEditAccessMode = (accessControl?: AccessControl) =>
+  !accessControl ||
+  accessControl.accessMode === undefined ||
+  accessControl.accessMode === 'default';

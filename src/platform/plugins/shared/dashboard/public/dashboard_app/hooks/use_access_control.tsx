@@ -8,8 +8,10 @@
  */
 
 import { useEffect, useState } from 'react';
-import type { AccessControl } from '../access_control';
-import { coreServices } from '../../services/kibana_services';
+import type { AccessControl } from '../access_control/types';
+import { getDashboardAuthorName } from '../access_control/get_dashboard_author_name';
+import { isDashboardInEditAccessMode } from '../access_control/is_dashboard_in_edit_access_mode';
+import { checkUserAccessControl } from '../access_control/check_user_access_control';
 
 interface UseAccessControl {
   accessControl?: AccessControl;
@@ -19,71 +21,35 @@ interface UseAccessControl {
 export const useAccessControl = ({ accessControl, createdBy }: UseAccessControl) => {
   const [canManageAccessControl, setCanManageAccessControl] = useState(false);
   const [isInEditAccessMode, setIsInEditAccessMode] = useState(false);
-  const [authorName, setAuthorName] = useState('');
+  const [authorName, setAuthorName] = useState<string | null>(null);
 
   useEffect(() => {
-    setIsInEditAccessMode(
-      !accessControl ||
-        accessControl.accessMode === undefined ||
-        accessControl.accessMode === 'default'
-    );
+    const isInEditMode = isDashboardInEditAccessMode(accessControl);
+    setIsInEditAccessMode(isInEditMode);
   }, [accessControl]);
 
   useEffect(() => {
     const checkUserPrivileges = async () => {
-      try {
-        const { isGloballyAuthorized } = await coreServices.http.get<{
-          isGloballyAuthorized: boolean;
-        }>('/api/dashboards/dashboard/access-control/global-authorization', {
-          query: { apiVersion: '1' },
-        });
-
-        if (isGloballyAuthorized) {
-          setCanManageAccessControl(true);
-          return;
-        }
-
-        const user = await coreServices.security.authc.getCurrentUser();
-        const userId = user.profile_uid;
-
-        if (!accessControl?.owner) {
-          setCanManageAccessControl(userId === createdBy);
-          return;
-        }
-
-        setCanManageAccessControl(userId === accessControl.owner);
-      } catch (error) {
-        setCanManageAccessControl(false);
-      }
+      const canManage = await checkUserAccessControl({ accessControl, createdBy });
+      setCanManageAccessControl(canManage);
     };
 
     checkUserPrivileges();
-  }, [createdBy, accessControl?.owner]);
+  }, [createdBy, accessControl]);
 
   useEffect(() => {
-    const creatorId = accessControl?.owner || createdBy;
-    if (!creatorId) {
+    const authorId = accessControl?.owner || createdBy;
+
+    if (!authorId) {
       return;
     }
 
-    const getCreatorName = async () => {
-      try {
-        const profiles = await coreServices.userProfile.bulkGet({
-          uids: new Set([creatorId]),
-        });
-        const autorProfile = profiles[0].user;
-
-        if (autorProfile) {
-          setAuthorName(autorProfile.username);
-        } else {
-          setAuthorName('');
-        }
-      } catch (error) {
-        setAuthorName('');
-      }
+    const getAuthorName = async () => {
+      const author = await getDashboardAuthorName(authorId);
+      setAuthorName(author);
     };
 
-    getCreatorName();
+    getAuthorName();
   }, [createdBy, accessControl?.owner]);
 
   return {

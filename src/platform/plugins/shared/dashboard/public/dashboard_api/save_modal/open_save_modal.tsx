@@ -15,7 +15,7 @@ import { showSaveModal } from '@kbn/saved-objects-plugin/public';
 import { i18n } from '@kbn/i18n';
 import type { SaveDashboardReturn } from '../../services/dashboard_content_management_service/types';
 import type { DashboardSaveOptions } from './types';
-import type { AccessControl } from '../../dashboard_app/access_control';
+
 import {
   coreServices,
   dataService,
@@ -26,6 +26,7 @@ import type { DashboardState } from '../../../common';
 import { DASHBOARD_CONTENT_ID, SAVED_OBJECT_POST_TIME } from '../../utils/telemetry_constants';
 import { extractTitleAndCount } from '../../utils/extract_title_and_count';
 import { DashboardSaveModal } from './save_modal';
+import type { AccessControl } from '../../dashboard_app/access_control/types';
 
 /**
  * @description exclusively for user directed dashboard save actions, also
