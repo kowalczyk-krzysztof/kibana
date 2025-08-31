@@ -28,6 +28,7 @@ import { FormattedMessage } from '@kbn/i18n-react';
 import { getStateFromKbnUrl, setStateToKbnUrl, unhashUrl } from '@kbn/kibana-utils-plugin/public';
 import type { LocatorPublic } from '@kbn/share-plugin/common';
 
+import type { SavedObjectAccessControl } from '@kbn/core/server';
 import type { DashboardLocatorParams } from '../../../../common';
 import { getDashboardBackupService } from '../../../services/dashboard_backup_service';
 import { dataService, shareService, coreServices } from '../../../services/kibana_services';
@@ -35,8 +36,6 @@ import { getDashboardCapabilities } from '../../../utils/get_dashboard_capabilit
 import { DASHBOARD_STATE_STORAGE_KEY } from '../../../utils/urls';
 import { shareModalStrings } from '../../_dashboard_app_strings';
 import { dashboardUrlParams } from '../../dashboard_router';
-
-import type { AccessControl, AccessMode } from '../../access_control/types';
 import type { SaveDashboardReturn } from '../../../services/dashboard_content_management_service/types';
 import { AccessModeContainer } from '../../access_control/access_mode_container';
 
@@ -49,10 +48,10 @@ export interface ShowShareModalProps {
   dashboardTitle?: string;
   anchorElement: HTMLElement;
   canSave: boolean;
-  accessControl?: AccessControl;
+  accessControl?: SavedObjectAccessControl;
   createdBy?: string;
   saveDashboard: () => Promise<SaveDashboardReturn | undefined>;
-  changeAccessMode: (accessMode: AccessMode) => Promise<void>;
+  changeAccessMode: (accessMode: SavedObjectAccessControl['accessMode']) => Promise<void>;
 }
 
 export const showPublicUrlSwitch = (anonymousUserCapabilities: Capabilities) => {
@@ -77,7 +76,7 @@ export function ShowShareModal({
 }: ShowShareModalProps) {
   if (!shareService) return;
 
-  const handleChangeAccessMode = async (accessMode: AccessMode) => {
+  const handleChangeAccessMode = async (accessMode: SavedObjectAccessControl['accessMode']) => {
     if (!savedObjectId) return;
 
     try {

@@ -7,7 +7,7 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import type { AccessMode } from '../../common/rpc/change_access_mode';
+import type { SavedObjectAccessControl } from '@kbn/core/server';
 import type { ChangeAccessModeResult } from '../../common';
 import type { ContentRegistry } from './registry';
 import type { StorageContext } from './types';
@@ -21,7 +21,7 @@ export class ChangeAccessModeService {
 
   async changeAccessMode(
     objects: Array<{ type: string; id: string; ctx: StorageContext }>,
-    options: { accessMode: AccessMode }
+    options: { accessMode: SavedObjectAccessControl['accessMode'] }
   ): Promise<ChangeAccessModeResult> {
     const objectsByType = new Map<
       string,

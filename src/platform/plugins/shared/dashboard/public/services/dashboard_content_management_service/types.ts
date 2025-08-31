@@ -11,6 +11,7 @@ import type { Reference } from '@kbn/content-management-utils';
 import type { Query, SerializedSearchSourceFields } from '@kbn/data-plugin/common';
 import type { SavedObjectSaveOpts } from '@kbn/saved-objects-plugin/public';
 
+import type { SavedObjectAccessControl } from '@kbn/core/server';
 import type { DashboardAttributes, DashboardGetOut } from '../../../server/content_management';
 import type { DashboardDuplicateTitleCheckProps } from './lib/check_for_duplicate_dashboard_title';
 import type {
@@ -20,7 +21,6 @@ import type {
 } from './lib/find_dashboards';
 import type { DashboardState } from '../../../common';
 import type { UpdateDashboardMetaProps } from './lib/update_dashboard_meta';
-import type { AccessControl, AccessMode } from '../../dashboard_app/access_control/types';
 
 export interface DashboardContentManagementService {
   findDashboards: FindDashboardsService;
@@ -52,7 +52,7 @@ export interface LoadDashboardReturn {
   managed?: boolean;
   resolveMeta?: DashboardResolveMeta;
   dashboardInput: DashboardState;
-  accessControl?: AccessControl;
+  accessControl?: SavedObjectAccessControl;
   createdBy?: string;
 
   /**
@@ -74,7 +74,7 @@ export interface SaveDashboardProps {
   panelReferences?: Reference[];
   searchSourceReferences?: Reference[];
   lastSavedId?: string;
-  accessMode?: AccessMode; // Only used for new dashboard creation
+  accessMode?: SavedObjectAccessControl['accessMode']; // Only used for new dashboard creation
 }
 
 export interface GetDashboardStateReturn {
@@ -109,5 +109,5 @@ export interface FindDashboardsService {
  */
 export interface ChangeAccessModeProps {
   ids: string[];
-  accessMode: AccessMode;
+  accessMode: SavedObjectAccessControl['accessMode'];
 }

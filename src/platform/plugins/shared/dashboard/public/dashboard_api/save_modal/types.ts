@@ -7,7 +7,7 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import type { AccessMode } from '../../dashboard_app/access_control/types';
+import type { SavedObjectAccessControl } from '@kbn/core/server';
 
 export interface DashboardSaveOptions {
   newTitle: string;
@@ -15,7 +15,7 @@ export interface DashboardSaveOptions {
   newDescription: string;
   newCopyOnSave: boolean;
   newTimeRestore: boolean;
-  newAccessMode?: AccessMode;
+  newAccessMode?: SavedObjectAccessControl['accessMode'];
   onTitleDuplicate: () => void;
   isTitleDuplicateConfirmed: boolean;
 }

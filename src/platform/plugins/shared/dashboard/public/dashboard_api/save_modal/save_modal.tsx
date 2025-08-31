@@ -21,10 +21,10 @@ import { i18n } from '@kbn/i18n';
 import { FormattedMessage } from '@kbn/i18n-react';
 import { SavedObjectSaveModal } from '@kbn/saved-objects-plugin/public';
 
+import type { SavedObjectAccessControl } from '@kbn/core/server';
 import { savedObjectsTaggingService } from '../../services/kibana_services';
 import type { DashboardSaveOptions } from './types';
 import { AccessModeContainer } from '../../dashboard_app/access_control/access_mode_container';
-import type { AccessControl } from '../../dashboard_app/access_control/types';
 
 interface DashboardSaveModalProps {
   onSave: ({
@@ -45,7 +45,7 @@ interface DashboardSaveModalProps {
   showCopyOnSave: boolean;
   showStoreTimeOnSave?: boolean;
   customModalTitle?: string;
-  accessControl?: AccessControl;
+  accessControl?: SavedObjectAccessControl;
 }
 
 type SaveDashboardHandler = (args: {

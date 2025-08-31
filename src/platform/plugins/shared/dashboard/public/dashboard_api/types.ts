@@ -48,6 +48,7 @@ import type { PublishesSearchSession } from '@kbn/presentation-publishing/interf
 import { type TracksOverlays } from '@kbn/presentation-util';
 import type { LocatorPublic } from '@kbn/share-plugin/common';
 import type { BehaviorSubject, Observable, Subject } from 'rxjs';
+import type { SavedObjectAccessControl } from '@kbn/core/server';
 import type { DashboardLocatorParams, DashboardSettings, DashboardState } from '../../common';
 import type { DashboardAttributes, GridData } from '../../server/content_management';
 import type {
@@ -55,7 +56,6 @@ import type {
   SaveDashboardReturn,
 } from '../services/dashboard_content_management_service/types';
 import type { DashboardLayout } from './layout_manager/types';
-import type { AccessControl, AccessMode } from '../dashboard_app/access_control/types';
 
 export const DASHBOARD_API_TYPE = 'dashboard';
 
@@ -156,8 +156,8 @@ export type DashboardApi = CanExpandPanels &
     setTags: (tags: string[]) => void;
     setTimeRange: (timeRange?: TimeRange | undefined) => void;
     unifiedSearchFilters$: PublishesUnifiedSearch['filters$'];
-    accessControl$: PublishingSubject<AccessControl>;
-    changeAccessMode: (accessMode: AccessMode) => Promise<void>;
+    accessControl$: PublishingSubject<SavedObjectAccessControl>;
+    changeAccessMode: (accessMode: SavedObjectAccessControl['accessMode']) => Promise<void>;
     createdBy?: string;
   };
 

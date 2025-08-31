@@ -13,6 +13,7 @@ import type { Reference } from '@kbn/content-management-utils';
 import { reportPerformanceMetricEvent } from '@kbn/ebt-tools';
 import { showSaveModal } from '@kbn/saved-objects-plugin/public';
 import { i18n } from '@kbn/i18n';
+import type { SavedObjectAccessControl } from '@kbn/core/server';
 import type { SaveDashboardReturn } from '../../services/dashboard_content_management_service/types';
 import type { DashboardSaveOptions } from './types';
 
@@ -26,7 +27,6 @@ import type { DashboardState } from '../../../common';
 import { DASHBOARD_CONTENT_ID, SAVED_OBJECT_POST_TIME } from '../../utils/telemetry_constants';
 import { extractTitleAndCount } from '../../utils/extract_title_and_count';
 import { DashboardSaveModal } from './save_modal';
-import type { AccessControl } from '../../dashboard_app/access_control/types';
 
 /**
  * @description exclusively for user directed dashboard save actions, also
@@ -47,7 +47,7 @@ export async function openSaveModal({
   lastSavedId: string | undefined;
   panelReferences: Reference[];
   viewMode: ViewMode;
-  accessControl?: AccessControl;
+  accessControl?: SavedObjectAccessControl;
 }) {
   try {
     if (viewMode === 'edit' && isManaged) {

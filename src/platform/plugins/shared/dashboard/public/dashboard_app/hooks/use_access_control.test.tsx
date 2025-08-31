@@ -8,7 +8,7 @@
  */
 
 import { coreServices } from '../../services/kibana_services';
-import type { AccessControl } from '../access_control';
+import type { SavedObjectAccessControl } from '@kbn/core/server';
 import { useAccessControl } from './use_access_control';
 import { renderHook, waitFor } from '@testing-library/react';
 
@@ -42,7 +42,7 @@ describe('useAccessControl', () => {
     expect(result.current.isInEditAccessMode).toBe(true);
 
     await waitFor(() => {
-      expect(result.current.isCurrentUserAuthor).toBe(true);
+      expect(result.current.canManageAccessControl).toBe(true);
     });
   });
 
@@ -54,7 +54,7 @@ describe('useAccessControl', () => {
     expect(result.current.isInEditAccessMode).toBe(true);
 
     await waitFor(() => {
-      expect(result.current.isCurrentUserAuthor).toBe(false);
+      expect(result.current.canManageAccessControl).toBe(false);
     });
   });
 
@@ -70,7 +70,7 @@ describe('useAccessControl', () => {
     expect(result.current.isInEditAccessMode).toBe(true);
 
     await waitFor(() => {
-      expect(result.current.isCurrentUserAuthor).toBe(true);
+      expect(result.current.canManageAccessControl).toBe(true);
     });
   });
 
@@ -86,67 +86,31 @@ describe('useAccessControl', () => {
     expect(result.current.isInEditAccessMode).toBe(true);
 
     await waitFor(() => {
-      expect(result.current.isCurrentUserAuthor).toBe(false);
-    });
-  });
-
-  it('returns correct values when accessMode is undefined', async () => {
-    const accessControl: AccessControl = { owner: 'user-id', accessMode: undefined };
-
-    const { result } = renderHook(() => useAccessControl({ accessControl, createdBy: 'user-id' }));
-
-    expect(result.current.isInEditAccessMode).toBe(true);
-
-    await waitFor(() => {
-      expect(result.current.isCurrentUserAuthor).toBe(true);
+      expect(result.current.canManageAccessControl).toBe(false);
     });
   });
 
   it('returns correct values when accessMode is "default"', async () => {
-    const accessControl: AccessControl = { owner: 'user-id', accessMode: 'default' };
+    const accessControl: SavedObjectAccessControl = { owner: 'user-id', accessMode: 'default' };
 
     const { result } = renderHook(() => useAccessControl({ accessControl, createdBy: 'user-id' }));
 
     expect(result.current.isInEditAccessMode).toBe(true);
 
     await waitFor(() => {
-      expect(result.current.isCurrentUserAuthor).toBe(true);
+      expect(result.current.canManageAccessControl).toBe(true);
     });
   });
 
   it('returns correct values when accessMode is "read_only"', async () => {
-    const accessControl: AccessControl = { owner: 'user-id', accessMode: 'read_only' };
+    const accessControl: SavedObjectAccessControl = { owner: 'user-id', accessMode: 'read_only' };
 
     const { result } = renderHook(() => useAccessControl({ accessControl, createdBy: 'user-id' }));
 
     expect(result.current.isInEditAccessMode).toBe(false);
 
     await waitFor(() => {
-      expect(result.current.isCurrentUserAuthor).toBe(true);
-    });
-  });
-
-  it('returns correct values when current user is the author', async () => {
-    const accessControl: AccessControl = { owner: 'user-id', accessMode: undefined };
-
-    const { result } = renderHook(() => useAccessControl({ accessControl, createdBy: 'user-id' }));
-
-    expect(result.current.isInEditAccessMode).toBe(true);
-
-    await waitFor(() => {
-      expect(result.current.isCurrentUserAuthor).toBe(true);
-    });
-  });
-
-  it('returns correct values when current user is not the author', async () => {
-    const accessControl: AccessControl = { owner: 'user-id2', accessMode: undefined };
-
-    const { result } = renderHook(() => useAccessControl({ accessControl, createdBy: 'user-id3' }));
-
-    expect(result.current.isInEditAccessMode).toBe(true);
-
-    await waitFor(() => {
-      expect(result.current.isCurrentUserAuthor).toBe(false);
+      expect(result.current.canManageAccessControl).toBe(true);
     });
   });
 });

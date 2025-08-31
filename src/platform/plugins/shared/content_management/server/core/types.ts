@@ -16,7 +16,7 @@ import type {
 import type { SavedObjectsFindResult } from '@kbn/core-saved-objects-api-server';
 
 import type { KibanaRequest } from '@kbn/core/server';
-import type { AccessMode } from '../../common/rpc/change_access_mode';
+import type { SavedObjectAccessControl } from '@kbn/core/server';
 import type {
   GetResult,
   BulkGetResult,
@@ -92,7 +92,7 @@ export interface ContentStorage<
   changeAccessMode?(
     ctx: StorageContext,
     ids: string[],
-    options: { accessMode: AccessMode }
+    options: { accessMode: SavedObjectAccessControl['accessMode'] }
   ): Promise<ChangeAccessModeResult>;
 
   /**

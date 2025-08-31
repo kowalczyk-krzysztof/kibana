@@ -8,21 +8,20 @@
  */
 
 import { BehaviorSubject } from 'rxjs';
-
+import type { SavedObjectAccessControl } from '@kbn/core/server';
 import { getDashboardContentManagementService } from '../services/dashboard_content_management_service';
 import type { LoadDashboardReturn } from '../services/dashboard_content_management_service/types';
-import type { AccessControl, AccessMode } from '../dashboard_app/access_control/types';
 
 export function initializeAccessControlManager(
   savedObjectResult?: LoadDashboardReturn,
   savedObjectId$?: BehaviorSubject<string | undefined>
 ) {
-  const accessControl$ = new BehaviorSubject<AccessControl>({
+  const accessControl$ = new BehaviorSubject<Partial<SavedObjectAccessControl>>({
     owner: savedObjectResult?.accessControl?.owner,
     accessMode: savedObjectResult?.accessControl?.accessMode,
   });
 
-  async function changeAccessMode(accessMode: AccessMode) {
+  async function changeAccessMode(accessMode: SavedObjectAccessControl['accessMode']) {
     const dashboardId = savedObjectId$?.value;
     if (!dashboardId) {
       throw new Error('Cannot change access mode: Dashboard ID is not available');

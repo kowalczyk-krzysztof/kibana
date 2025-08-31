@@ -7,12 +7,12 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
+import type { SavedObjectAccessControl } from '@kbn/core/server';
 import { coreServices } from '../../services/kibana_services';
 import { checkGlobalManageControlPrivilege } from './check_global_manage_control_privilege';
-import type { AccessControl } from './types';
 
 interface CheckUserAccessControlOptions {
-  accessControl?: AccessControl;
+  accessControl?: SavedObjectAccessControl;
   createdBy?: string;
 }
 

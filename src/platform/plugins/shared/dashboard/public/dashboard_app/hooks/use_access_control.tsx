@@ -8,13 +8,13 @@
  */
 
 import { useEffect, useState } from 'react';
-import type { AccessControl } from '../access_control/types';
+import type { SavedObjectAccessControl } from '@kbn/core/server';
 import { getDashboardAuthorName } from '../access_control/get_dashboard_author_name';
 import { isDashboardInEditAccessMode } from '../access_control/is_dashboard_in_edit_access_mode';
 import { checkUserAccessControl } from '../access_control/check_user_access_control';
 
 interface UseAccessControl {
-  accessControl?: AccessControl;
+  accessControl?: SavedObjectAccessControl;
   createdBy?: string;
 }
 

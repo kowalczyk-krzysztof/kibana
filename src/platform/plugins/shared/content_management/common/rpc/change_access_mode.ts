@@ -8,6 +8,7 @@
  */
 
 import { schema } from '@kbn/config-schema';
+import type { SavedObjectAccessControl } from '@kbn/core/server';
 import type { Version } from '@kbn/object-versioning';
 import type { ProcedureSchemas } from './types';
 import { versionSchema } from './constants';
@@ -62,7 +63,7 @@ export interface ChangeAccessModeIn {
     id: string;
   }>;
   options: {
-    accessMode: AccessMode;
+    accessMode: SavedObjectAccessControl['accessMode'];
   };
 }
 
@@ -73,11 +74,4 @@ export interface ChangeAccessModeResult {
       id: string;
     } & { error?: { error: string; message: string; statusCode: number } }
   >;
-}
-
-export type AccessMode = 'default' | 'read_only';
-
-export interface AccessControl {
-  owner?: string;
-  accessMode?: AccessMode;
 }

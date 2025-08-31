@@ -10,7 +10,7 @@
 import React from 'react';
 import { renderWithI18n } from '@kbn/test-jest-helpers';
 import { AccessModeContainer } from './access_mode_container';
-import type { AccessControl } from './types';
+import type { SavedObjectAccessControl } from '@kbn/core/server';
 import { spacesService } from '../../services/kibana_services';
 import type { SpacesApi } from '@kbn/spaces-plugin/public';
 import { act, waitFor, screen } from '@testing-library/react';
@@ -37,7 +37,7 @@ describe('Access Mode Container', () => {
       isInEditAccessMode: true,
     });
 
-    const accessControl: AccessControl = { owner: 'user-id', accessMode: 'default' };
+    const accessControl: SavedObjectAccessControl = { owner: 'user-id', accessMode: 'default' };
 
     await act(async () => {
       renderWithI18n(
@@ -55,7 +55,7 @@ describe('Access Mode Container', () => {
       isInEditAccessMode: true,
     });
 
-    const accessControl: AccessControl = { owner: 'user-id', accessMode: 'default' };
+    const accessControl: SavedObjectAccessControl = { owner: 'user-id', accessMode: 'default' };
 
     await act(async () => {
       renderWithI18n(
@@ -93,7 +93,7 @@ describe('Access Mode Container', () => {
       isInEditAccessMode: true,
     });
 
-    const accessControl: AccessControl = { owner: 'user-id2', accessMode: 'default' };
+    const accessControl: SavedObjectAccessControl = { owner: 'user-id2', accessMode: 'default' };
 
     await act(async () => {
       renderWithI18n(
@@ -133,7 +133,7 @@ describe('Access Mode Container', () => {
       isInEditAccessMode: true,
     });
 
-    const accessControl: AccessControl = { owner: 'user-id2', accessMode: 'default' };
+    const accessControl: SavedObjectAccessControl = { owner: 'user-id2', accessMode: 'default' };
 
     await act(async () => {
       renderWithI18n(
@@ -154,7 +154,7 @@ describe('Access Mode Container', () => {
       isInEditAccessMode: true,
     });
 
-    const accessControl: AccessControl = { owner: 'user-id', accessMode: 'default' };
+    const accessControl: SavedObjectAccessControl = { owner: 'user-id', accessMode: 'default' };
 
     await act(async () => {
       renderWithI18n(

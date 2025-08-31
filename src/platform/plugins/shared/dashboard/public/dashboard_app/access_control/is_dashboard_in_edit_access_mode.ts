@@ -7,9 +7,9 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import type { AccessControl } from './types';
+import type { SavedObjectAccessControl } from '@kbn/core/server';
 
-export const isDashboardInEditAccessMode = (accessControl?: AccessControl) =>
+export const isDashboardInEditAccessMode = (accessControl?: SavedObjectAccessControl) =>
   !accessControl ||
   accessControl.accessMode === undefined ||
   accessControl.accessMode === 'default';

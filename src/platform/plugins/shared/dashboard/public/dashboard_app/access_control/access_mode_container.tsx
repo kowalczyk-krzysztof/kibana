@@ -21,8 +21,8 @@ import {
 } from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n-react';
 import { i18n } from '@kbn/i18n';
+import type { SavedObjectAccessControl } from '@kbn/core/server';
 import { useAccessControl } from '../hooks/use_access_control';
-import type { AccessControl, AccessMode } from './types';
 import { spacesService } from '../../services/kibana_services';
 
 const selectOptions = [
@@ -47,8 +47,8 @@ const selectOptions = [
 ];
 
 interface Props {
-  onChangeAccessMode: (value: AccessMode) => Promise<void> | void;
-  accessControl?: AccessControl;
+  onChangeAccessMode: (value: SavedObjectAccessControl['accessMode']) => Promise<void> | void;
+  accessControl?: SavedObjectAccessControl;
   createdBy?: string;
 }
 
@@ -70,7 +70,7 @@ export const AccessModeContainer = ({ onChangeAccessMode, accessControl, created
 
   const handleSelectChange = async (e: ChangeEvent<HTMLSelectElement>) => {
     setIsUpdatingPermissions(true);
-    await onChangeAccessMode(e.target.value as AccessMode);
+    await onChangeAccessMode(e.target.value as SavedObjectAccessControl['accessMode']);
     setIsUpdatingPermissions(false);
   };
 
