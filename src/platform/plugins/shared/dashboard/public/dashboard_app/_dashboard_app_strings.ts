@@ -22,7 +22,8 @@ export const dashboardReadonlyBadge = {
     }),
   getTooltip: () =>
     i18n.translate('dashboard.badge.readOnly.tooltip', {
-      defaultMessage: 'Unable to save dashboards',
+      defaultMessage:
+        "You don't have permissions to edit this dashboard. Contact your admin to change your role.",
     }),
 };
 

@@ -16,6 +16,9 @@ import type { SavedObjectsFindOptionsReference } from '@kbn/core/public';
 import { reportPerformanceMetricEvent } from '@kbn/ebt-tools';
 import type { ViewMode } from '@kbn/presentation-publishing';
 
+import { i18n } from '@kbn/i18n';
+import { checkUserAccessControl } from '../../dashboard_app/access_control/check_user_access_control';
+import { checkGlobalManageControlPrivilege } from '../../dashboard_app/access_control/check_global_manage_control_privilege';
 import type { DashboardSearchOut } from '../../../server/content_management';
 import {
   DASHBOARD_CONTENT_ID,
@@ -44,7 +47,8 @@ const SAVED_OBJECTS_LIMIT_SETTING = 'savedObjects:listingLimit';
 const SAVED_OBJECTS_PER_PAGE_SETTING = 'savedObjects:perPage';
 
 const toTableListViewSavedObject = (
-  hit: DashboardSearchOut['hits'][number]
+  hit: DashboardSearchOut['hits'][number],
+  canManageAccessControl: boolean
 ): DashboardSavedObjectUserContent => {
   const { title, description, timeRestore } = hit.attributes;
   return {
@@ -61,6 +65,7 @@ const toTableListViewSavedObject = (
       description,
       timeRestore,
     },
+    canManageAccessControl,
   };
 };
 
@@ -220,7 +225,9 @@ export const useDashboardListingTable = ({
             fields: ['title', 'description', 'timeRestore'],
           },
         })
-        .then(({ total, hits }) => {
+        .then(async ({ total, hits }) => {
+          const user = await coreServices.security.authc.getCurrentUser();
+          const isGloballyAuthorized = await checkGlobalManageControlPrivilege();
           const searchEndTime = window.performance.now();
           const searchDuration = searchEndTime - searchStartTime;
           reportPerformanceMetricEvent(coreServices.analytics, {
@@ -232,7 +239,16 @@ export const useDashboardListingTable = ({
           });
           return {
             total,
-            hits: hits.map(toTableListViewSavedObject),
+            hits: hits.map((hit) => {
+              const canManageAccessControl =
+                isGloballyAuthorized ||
+                checkUserAccessControl({
+                  accessControl: hit.accessControl,
+                  createdBy: hit.createdBy,
+                  userId: user.profile_uid,
+                });
+              return toTableListViewSavedObject(hit, canManageAccessControl);
+            }),
           };
         });
     },
@@ -271,11 +287,6 @@ export const useDashboardListingTable = ({
     [dashboardBackupService, dashboardContentManagementService]
   );
 
-  /* TODO: Add tooltip:
-    Normal: Edit
-    Role no-edit: You don’t have permissions to edit this dashboard. Contact creator to change it.
-    Managed: This dashboard is managed by Elastic. Duplicate it to make changes.
-  */
   const editItem = useCallback(
     ({ id }: { id: string | undefined }) => goToDashboard(id, 'edit'),
     [goToDashboard]
@@ -319,6 +330,48 @@ export const useDashboardListingTable = ({
       urlStateEnabled,
       createdByEnabled: true,
       recentlyAccessed: getDashboardRecentlyAccessedService(),
+      rowItemActions: (item) => {
+        const isDisabled =
+          !showWriteControls || item?.managed || item?.canManageAccessControl === false;
+
+        const getReason = () => {
+          if (!showWriteControls) {
+            return i18n.translate(
+              'contentManagement.contentEditor.metadataForm.readOnlyToolTip.role',
+              {
+                defaultMessage:
+                  "You don't have permissions to edit this dashboard. Contact your admin to change your role.",
+              }
+            );
+          }
+          if (item?.managed) {
+            return i18n.translate(
+              'contentManagement.contentEditor.metadataForm.readOnlyToolTip.managed',
+              {
+                defaultMessage:
+                  'This dashboard is managed by Elastic. Duplicate it to make changes.',
+              }
+            );
+          }
+          if (item?.canManageAccessControl === false) {
+            return i18n.translate(
+              'contentManagement.contentEditor.metadataForm.readOnlyToolTip.default.accessControl',
+              {
+                defaultMessage:
+                  "You don't have permissions to edit this dashboard. Contact the author or an admin to change it.",
+              }
+            );
+          }
+          return '';
+        };
+
+        return {
+          edit: {
+            enabled: !isDisabled,
+            reason: getReason(),
+          },
+        };
+      },
     };
   }, [
     contentEditorValidators,

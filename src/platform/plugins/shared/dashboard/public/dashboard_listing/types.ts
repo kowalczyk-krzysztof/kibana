@@ -28,4 +28,5 @@ export interface DashboardSavedObjectUserContent extends UserContentCommonSchema
     description?: string;
     timeRestore: boolean;
   };
+  canManageAccessControl?: boolean;
 }

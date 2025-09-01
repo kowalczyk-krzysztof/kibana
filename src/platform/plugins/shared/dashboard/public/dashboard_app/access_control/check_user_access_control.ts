@@ -8,34 +8,25 @@
  */
 
 import type { SavedObjectAccessControl } from '@kbn/core/server';
-import { coreServices } from '../../services/kibana_services';
-import { checkGlobalManageControlPrivilege } from './check_global_manage_control_privilege';
 
 interface CheckUserAccessControlOptions {
   accessControl?: Partial<SavedObjectAccessControl>;
   createdBy?: string;
+  userId?: string;
 }
 
-export const checkUserAccessControl = async ({
+export const checkUserAccessControl = ({
   accessControl,
   createdBy,
+  userId,
 }: CheckUserAccessControlOptions) => {
-  try {
-    const isGloballyAuthorized = await checkGlobalManageControlPrivilege();
-
-    if (isGloballyAuthorized) {
-      return true;
-    }
-
-    const user = await coreServices.security.authc.getCurrentUser();
-    const userId = user.profile_uid;
-
-    if (!accessControl?.owner) {
-      return userId === createdBy;
-    }
-
-    return userId === accessControl.owner;
-  } catch (error) {
+  if (!userId) {
     return false;
   }
+
+  if (!accessControl?.owner) {
+    return userId === createdBy;
+  }
+
+  return userId === accessControl.owner;
 };

@@ -11,19 +11,7 @@ import React, { useCallback, useState, useMemo } from 'react';
 import type { FC } from 'react';
 import { i18n } from '@kbn/i18n';
 import { FormattedMessage } from '@kbn/i18n-react';
-import {
-  EuiFlyoutHeader,
-  EuiFlyoutBody,
-  EuiFlyoutFooter,
-  EuiTitle,
-  EuiFlexGroup,
-  EuiFlexItem,
-  EuiButton,
-  EuiButtonEmpty,
-  EuiIcon,
-  useEuiTheme,
-} from '@elastic/eui';
-import { css } from '@emotion/react';
+import { EuiFlyoutHeader, EuiFlyoutBody, EuiFlyoutFooter, EuiTitle, EuiButton } from '@elastic/eui';
 
 import type { Services } from '../services';
 import type { Item } from '../types';
@@ -37,10 +25,6 @@ const getI18nTexts = ({ entityName }: { entityName: string }) => ({
     values: {
       entityName,
     },
-  }),
-  // TODO: Remove and replace with normal X button in header
-  cancelButtonLabel: i18n.translate('contentManagement.contentEditor.cancelButtonLabel', {
-    defaultMessage: 'Cancel',
   }),
 });
 
@@ -57,7 +41,6 @@ export interface Props {
     tags: string[];
   }) => Promise<void>;
   customValidators?: CustomValidators;
-  onCancel: () => void;
   appendRows?: React.ReactNode;
 }
 
@@ -70,11 +53,9 @@ export const ContentEditorFlyoutContent: FC<Props> = ({
   readonlyReason,
   services: { TagSelector, TagList, notifyError },
   onSave,
-  onCancel,
   customValidators,
   appendRows,
 }) => {
-  const { euiTheme } = useEuiTheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const i18nTexts = useMemo(() => getI18nTexts({ entityName }), [entityName]);
@@ -127,14 +108,6 @@ export const ContentEditorFlyoutContent: FC<Props> = ({
     setIsSubmitted(true);
   }, [onSave, item.id, form, notifyError, entityName]);
 
-  const onClickCancel = useCallback(() => {
-    onCancel();
-  }, [onCancel]);
-
-  const iconCSS = css`
-    margin-right: ${euiTheme.size.m};
-  `;
-
   const title = capitalize(
     i18n.translate('contentManagement.contentEditor.flyoutTitle', {
       defaultMessage: '{entityName} details',
@@ -149,25 +122,17 @@ export const ContentEditorFlyoutContent: FC<Props> = ({
       <EuiFlyoutHeader>
         <EuiTitle data-test-subj="flyoutTitle">
           <h2>
-            <EuiIcon type="info" css={iconCSS} size="l" />
             <span>{title}</span>
           </h2>
         </EuiTitle>
       </EuiFlyoutHeader>
-
       <EuiFlyoutBody>
         <MetadataForm
           form={{ ...form, isSubmitted }}
           isReadonly={isReadonly}
           readonlyReason={
-            /*
-              TODO: Replace this with a warning callout:
-              managed: You don’t have permissions to edit this dashboard. Contact your admin to change your role.
-              role no-edit: You don’t have permissions to edit this dashboard. Contact your admin to change your role.
-              Readonly: You don’t have permissions to edit this dashboard. Contact [Creator name] to change it.
-            */
             readonlyReason ||
-            i18n.translate('contentManagement.contentEditor.metadataForm.readOnlyToolTip', {
+            i18n.translate('contentManagement.contentEditor.metadataForm.readOnlyToolTip.default', {
               defaultMessage: 'To edit these details, contact your administrator for access.',
             })
           }
@@ -178,37 +143,19 @@ export const ContentEditorFlyoutContent: FC<Props> = ({
           {appendRows}
         </MetadataForm>
       </EuiFlyoutBody>
-
       <EuiFlyoutFooter>
-        <>
-          <EuiFlexGroup justifyContent="spaceBetween" alignItems="center">
-            <EuiFlexItem grow={false}>
-              <EuiButtonEmpty
-                iconType="cross"
-                flush="left"
-                onClick={onClickCancel}
-                data-test-subj="closeFlyoutButton"
-              >
-                {i18nTexts.cancelButtonLabel}
-              </EuiButtonEmpty>
-            </EuiFlexItem>
-
-            {isReadonly === false && (
-              <EuiFlexItem grow={false}>
-                <EuiButton
-                  color="primary"
-                  onClick={onClickSave}
-                  data-test-subj="saveButton"
-                  fill
-                  disabled={(isSubmitted && !form.isValid) || hasNoChanges()}
-                  isLoading={isSubmitting}
-                >
-                  {i18nTexts.saveButtonLabel}
-                </EuiButton>
-              </EuiFlexItem>
-            )}
-          </EuiFlexGroup>
-        </>
+        {isReadonly === false && (
+          <EuiButton
+            color="primary"
+            onClick={onClickSave}
+            data-test-subj="saveButton"
+            fill
+            disabled={(isSubmitted && !form.isValid) || hasNoChanges()}
+            isLoading={isSubmitting}
+          >
+            {i18nTexts.saveButtonLabel}
+          </EuiButton>
+        )}
       </EuiFlyoutFooter>
     </>
   );
