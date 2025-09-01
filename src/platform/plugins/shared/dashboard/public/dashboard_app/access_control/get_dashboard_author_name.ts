@@ -13,6 +13,7 @@ export const getDashboardAuthorName = async (authorId?: string) => {
   if (!authorId) {
     return null;
   }
+
   try {
     const profiles = await coreServices.userProfile.bulkGet({
       uids: new Set([authorId]),

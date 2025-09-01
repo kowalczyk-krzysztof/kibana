@@ -25,6 +25,10 @@ export const checkUserAccessControl = ({
   }
 
   if (!accessControl?.owner) {
+    // New dashboard
+    if (!createdBy) {
+      return true;
+    }
     return userId === createdBy;
   }
 

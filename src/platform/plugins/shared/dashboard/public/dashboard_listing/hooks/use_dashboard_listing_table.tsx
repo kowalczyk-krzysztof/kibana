@@ -17,6 +17,7 @@ import { reportPerformanceMetricEvent } from '@kbn/ebt-tools';
 import type { ViewMode } from '@kbn/presentation-publishing';
 
 import { i18n } from '@kbn/i18n';
+import { getDashboardAuthorName } from '../../dashboard_app/access_control/get_dashboard_author_name';
 import { checkUserAccessControl } from '../../dashboard_app/access_control/check_user_access_control';
 import { checkGlobalManageControlPrivilege } from '../../dashboard_app/access_control/check_global_manage_control_privilege';
 import type { DashboardSearchOut } from '../../../server/content_management';
@@ -48,7 +49,8 @@ const SAVED_OBJECTS_PER_PAGE_SETTING = 'savedObjects:perPage';
 
 const toTableListViewSavedObject = (
   hit: DashboardSearchOut['hits'][number],
-  canManageAccessControl: boolean
+  canManageAccessControl: boolean,
+  authorName: string | null
 ): DashboardSavedObjectUserContent => {
   const { title, description, timeRestore } = hit.attributes;
   return {
@@ -66,6 +68,8 @@ const toTableListViewSavedObject = (
       timeRestore,
     },
     canManageAccessControl,
+    accessMode: hit?.accessControl?.accessMode,
+    authorName,
   };
 };
 
@@ -228,6 +232,7 @@ export const useDashboardListingTable = ({
         .then(async ({ total, hits }) => {
           const user = await coreServices.security.authc.getCurrentUser();
           const isGloballyAuthorized = await checkGlobalManageControlPrivilege();
+
           const searchEndTime = window.performance.now();
           const searchDuration = searchEndTime - searchStartTime;
           reportPerformanceMetricEvent(coreServices.analytics, {
@@ -237,9 +242,8 @@ export const useDashboardListingTable = ({
               saved_object_type: DASHBOARD_CONTENT_ID,
             },
           });
-          return {
-            total,
-            hits: hits.map((hit) => {
+          const result = await Promise.all(
+            hits.map(async (hit) => {
               const canManageAccessControl =
                 isGloballyAuthorized ||
                 checkUserAccessControl({
@@ -247,8 +251,17 @@ export const useDashboardListingTable = ({
                   createdBy: hit.createdBy,
                   userId: user.profile_uid,
                 });
-              return toTableListViewSavedObject(hit, canManageAccessControl);
-            }),
+
+              const authorName = await getDashboardAuthorName(
+                hit.accessControl?.owner || hit.createdBy
+              );
+              return toTableListViewSavedObject(hit, canManageAccessControl, authorName);
+            })
+          );
+
+          return {
+            total,
+            hits: result,
           };
         });
     },
@@ -288,7 +301,9 @@ export const useDashboardListingTable = ({
   );
 
   const editItem = useCallback(
-    ({ id }: { id: string | undefined }) => goToDashboard(id, 'edit'),
+    ({ id }: { id: string | undefined }) => {
+      return goToDashboard(id, 'edit');
+    },
     [goToDashboard]
   );
 
@@ -304,7 +319,7 @@ export const useDashboardListingTable = ({
   );
 
   const tableListViewTableProps: DashboardListingViewTableProps = useMemo(() => {
-    const { showWriteControls } = getDashboardCapabilities(); // TODO: Add access control check here
+    const { showWriteControls } = getDashboardCapabilities();
     return {
       contentEditor: {
         isReadonly: !showWriteControls,
@@ -331,8 +346,13 @@ export const useDashboardListingTable = ({
       createdByEnabled: true,
       recentlyAccessed: getDashboardRecentlyAccessedService(),
       rowItemActions: (item) => {
-        const isDisabled =
-          !showWriteControls || item?.managed || item?.canManageAccessControl === false;
+        const isDisabled = () => {
+          if (!showWriteControls) return true;
+          if (item?.managed === true) return true;
+          if (item?.canManageAccessControl === false && item?.accessMode === 'read_only')
+            return true;
+          return false;
+        };
 
         const getReason = () => {
           if (!showWriteControls) {
@@ -358,7 +378,8 @@ export const useDashboardListingTable = ({
               'contentManagement.contentEditor.metadataForm.readOnlyToolTip.default.accessControl',
               {
                 defaultMessage:
-                  "You don't have permissions to edit this dashboard. Contact the author or an admin to change it.",
+                  "You don't have permissions to edit this dashboard. Contact {authorName} or an admin to change it.",
+                values: { authorName: item?.authorName || 'the author' },
               }
             );
           }
@@ -367,7 +388,11 @@ export const useDashboardListingTable = ({
 
         return {
           edit: {
-            enabled: !isDisabled,
+            enabled: !isDisabled(),
+            reason: getReason(),
+          },
+          delete: {
+            enabled: !isDisabled(),
             reason: getReason(),
           },
         };

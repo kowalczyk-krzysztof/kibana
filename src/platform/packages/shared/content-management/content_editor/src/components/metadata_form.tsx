@@ -61,7 +61,7 @@ export const MetadataForm: FC<React.PropsWithChildren<Props>> = ({
   return (
     <EuiForm isInvalid={isSubmitted && !isValid} error={getErrors()} data-test-subj="metadataForm">
       <ContentEditorFlyoutWarningsCallOut warningMessages={getWarnings()} />
-      {readonlyReason && (
+      {isReadonly && (
         <>
           <EuiCallOut size="s" title={readonlyReason} iconType="info" />
           <EuiSpacer size="l" />

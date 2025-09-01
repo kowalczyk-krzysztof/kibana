@@ -186,7 +186,7 @@ export const topNavStrings = {
       i18n.translate('dashboard.topNave.editButtonTooltip', {
         defaultMessage:
           "You don't have permission to edit this dashboard. Contact {authorName} or an admin to change it.",
-        values: { authorName: authorName || 'author' },
+        values: { authorName: authorName || 'the author' },
       }),
     managedDashboardTooltip: i18n.translate('dashboard.topNave.editManagedTooltip', {
       defaultMessage: 'This dashboard is managed by Elastic. Duplicate it to make changes.',

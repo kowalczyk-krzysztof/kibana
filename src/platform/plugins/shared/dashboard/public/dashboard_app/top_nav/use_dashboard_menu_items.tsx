@@ -58,11 +58,11 @@ export const useDashboardMenuItems = ({
   });
 
   useEffect(() => {
-    if (viewMode === 'edit' && !isInEditAccessMode && !canManageAccessControl) {
-      // if somehow a user ends up in edit mode but they don't have permissions to be in edit mode, switch back to view mode
+    // If we are in edit mode but the user doesn't have edit permissions and the dashboard is not new, switch to view mode.
+    if (viewMode === 'edit' && lastSavedId && !isInEditAccessMode && !canManageAccessControl) {
       dashboardApi.setViewMode('view');
     }
-  }, [canManageAccessControl, isInEditAccessMode, dashboardApi, viewMode]);
+  }, [canManageAccessControl, isInEditAccessMode, dashboardApi, viewMode, lastSavedId]);
 
   const isEditButtonDisabled = useMemo(() => {
     if (disableTopNav) return true;
@@ -131,7 +131,6 @@ export const useDashboardMenuItems = ({
   }, [dashboardApi]);
 
   const saveFromShareModal = useCallback(async () => {
-    // TODO: Add toast
     if (lastSavedId) {
       quickSaveDashboard();
       return Promise.resolve({});

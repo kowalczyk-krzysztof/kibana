@@ -126,7 +126,7 @@ export const AccessModeContainer = ({ onChangeAccessMode, accessControl, created
                         <FormattedMessage
                           id="dashboard.accessControl.accessMode.container.description.tooltipContent"
                           defaultMessage="Only {authorName} and admins can edit permissions."
-                          values={{ authorName: authorName || 'author' }}
+                          values={{ authorName: authorName || 'the author' }}
                         />
                       }
                       aria-label={i18n.translate(
@@ -134,7 +134,7 @@ export const AccessModeContainer = ({ onChangeAccessMode, accessControl, created
                         {
                           defaultMessage: 'Only {authorName} and admins can edit permissions.',
                           values: {
-                            authorName: authorName || 'author',
+                            authorName: authorName || 'the author',
                           },
                         }
                       )}
