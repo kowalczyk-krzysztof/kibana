@@ -52,7 +52,7 @@ export interface LoadDashboardReturn {
   managed?: boolean;
   resolveMeta?: DashboardResolveMeta;
   dashboardInput: DashboardState;
-  accessControl?: SavedObjectAccessControl;
+  accessControl?: Partial<SavedObjectAccessControl>;
   createdBy?: string;
 
   /**

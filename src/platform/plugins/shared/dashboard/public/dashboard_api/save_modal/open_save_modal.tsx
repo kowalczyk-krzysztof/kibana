@@ -47,7 +47,7 @@ export async function openSaveModal({
   lastSavedId: string | undefined;
   panelReferences: Reference[];
   viewMode: ViewMode;
-  accessControl?: SavedObjectAccessControl;
+  accessControl?: Partial<SavedObjectAccessControl>;
 }) {
   try {
     if (viewMode === 'edit' && isManaged) {

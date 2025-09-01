@@ -45,7 +45,7 @@ interface DashboardSaveModalProps {
   showCopyOnSave: boolean;
   showStoreTimeOnSave?: boolean;
   customModalTitle?: string;
-  accessControl?: SavedObjectAccessControl;
+  accessControl?: Partial<SavedObjectAccessControl>;
 }
 
 type SaveDashboardHandler = (args: {

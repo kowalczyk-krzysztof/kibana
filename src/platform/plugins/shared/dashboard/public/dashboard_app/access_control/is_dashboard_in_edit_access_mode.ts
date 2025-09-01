@@ -9,7 +9,7 @@
 
 import type { SavedObjectAccessControl } from '@kbn/core/server';
 
-export const isDashboardInEditAccessMode = (accessControl?: SavedObjectAccessControl) =>
+export const isDashboardInEditAccessMode = (accessControl?: Partial<SavedObjectAccessControl>) =>
   !accessControl ||
   accessControl.accessMode === undefined ||
   accessControl.accessMode === 'default';

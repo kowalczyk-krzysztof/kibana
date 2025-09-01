@@ -48,7 +48,7 @@ const selectOptions = [
 
 interface Props {
   onChangeAccessMode: (value: SavedObjectAccessControl['accessMode']) => Promise<void> | void;
-  accessControl?: SavedObjectAccessControl;
+  accessControl?: Partial<SavedObjectAccessControl>;
   createdBy?: string;
 }
 
@@ -125,14 +125,14 @@ export const AccessModeContainer = ({ onChangeAccessMode, accessControl, created
                       content={
                         <FormattedMessage
                           id="dashboard.accessControl.accessMode.container.description.tooltipContent"
-                          defaultMessage="Only {author} can edit permissions"
-                          values={{ author: authorName || 'author' }}
+                          defaultMessage="Only {authorName} and admins can edit permissions."
+                          values={{ authorName: authorName || 'author' }}
                         />
                       }
                       aria-label={i18n.translate(
                         'dashboard.accessControl.accessMode.container.description.tooltipAriaLabel',
                         {
-                          defaultMessage: 'Only {authorName} can edit permissions',
+                          defaultMessage: 'Only {authorName} and admins can edit permissions.',
                           values: {
                             authorName: authorName || 'author',
                           },

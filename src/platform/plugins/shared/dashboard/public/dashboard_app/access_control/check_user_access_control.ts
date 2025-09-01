@@ -12,7 +12,7 @@ import { coreServices } from '../../services/kibana_services';
 import { checkGlobalManageControlPrivilege } from './check_global_manage_control_privilege';
 
 interface CheckUserAccessControlOptions {
-  accessControl?: SavedObjectAccessControl;
+  accessControl?: Partial<SavedObjectAccessControl>;
   createdBy?: string;
 }
 

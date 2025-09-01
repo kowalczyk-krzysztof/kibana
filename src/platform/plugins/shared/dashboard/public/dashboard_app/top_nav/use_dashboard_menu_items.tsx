@@ -8,7 +8,7 @@
  */
 
 import type { Dispatch, SetStateAction } from 'react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { TopNavMenuData } from '@kbn/navigation-plugin/public';
 import useMountedState from 'react-use/lib/useMountedState';
 import { useBatchedPublishingSubjects } from '@kbn/presentation-publishing';
@@ -56,6 +56,13 @@ export const useDashboardMenuItems = ({
     accessControl,
     createdBy: dashboardApi.createdBy,
   });
+
+  useEffect(() => {
+    if (viewMode === 'edit' && !isInEditAccessMode && !canManageAccessControl) {
+      // if somehow a user ends up in edit mode but they don't have permissions to be in edit mode, switch back to view mode
+      dashboardApi.setViewMode('view');
+    }
+  }, [canManageAccessControl, isInEditAccessMode, dashboardApi, viewMode]);
 
   const isEditButtonDisabled = useMemo(() => {
     if (disableTopNav) return true;

@@ -14,7 +14,7 @@ import { isDashboardInEditAccessMode } from '../access_control/is_dashboard_in_e
 import { checkUserAccessControl } from '../access_control/check_user_access_control';
 
 interface UseAccessControl {
-  accessControl?: SavedObjectAccessControl;
+  accessControl?: Partial<SavedObjectAccessControl>;
   createdBy?: string;
 }
 
@@ -38,14 +38,8 @@ export const useAccessControl = ({ accessControl, createdBy }: UseAccessControl)
   }, [createdBy, accessControl]);
 
   useEffect(() => {
-    const authorId = accessControl?.owner || createdBy;
-
-    if (!authorId) {
-      return;
-    }
-
     const getAuthorName = async () => {
-      const author = await getDashboardAuthorName(authorId);
+      const author = await getDashboardAuthorName(accessControl?.owner || createdBy);
       setAuthorName(author);
     };
 
