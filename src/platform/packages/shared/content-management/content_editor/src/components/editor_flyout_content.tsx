@@ -132,7 +132,7 @@ export const ContentEditorFlyoutContent: FC<Props> = ({
           isReadonly={isReadonly}
           readonlyReason={
             readonlyReason ||
-            i18n.translate('contentManagement.contentEditor.metadataForm.readOnlyToolTip.default', {
+            i18n.translate('contentManagement.contentEditor.metadataForm.readOnlyToolTip', {
               defaultMessage: 'To edit these details, contact your administrator for access.',
             })
           }

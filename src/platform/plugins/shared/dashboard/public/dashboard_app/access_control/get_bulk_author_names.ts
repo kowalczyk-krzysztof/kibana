@@ -9,18 +9,18 @@
 
 import { coreServices } from '../../services/kibana_services';
 
-export const getDashboardAuthorName = async (authorId?: string) => {
-  if (!authorId) {
-    return null;
+export const getBulkAuthorNames = async (ids: Array<string | undefined>) => {
+  if (ids.length === 0) {
+    return [];
   }
 
   try {
     const profiles = await coreServices.userProfile.bulkGet({
-      uids: new Set([authorId]),
+      uids: new Set(ids.filter((id): id is string => !!id)),
     });
 
-    return profiles[0].user.username || null;
-  } catch (error) {
-    return null;
+    return profiles.map((profile) => ({ id: profile.uid, username: profile.user.username }));
+  } catch (e) {
+    return [];
   }
 };

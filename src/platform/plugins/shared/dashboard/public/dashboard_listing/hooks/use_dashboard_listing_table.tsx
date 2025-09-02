@@ -16,8 +16,8 @@ import type { SavedObjectsFindOptionsReference } from '@kbn/core/public';
 import { reportPerformanceMetricEvent } from '@kbn/ebt-tools';
 import type { ViewMode } from '@kbn/presentation-publishing';
 
-import { i18n } from '@kbn/i18n';
-import { getDashboardAuthorName } from '../../dashboard_app/access_control/get_dashboard_author_name';
+import { contentManagementFlyoutStrings } from '../../dashboard_app/_dashboard_app_strings';
+import { getBulkAuthorNames } from '../../dashboard_app/access_control/get_bulk_author_names';
 import { checkUserAccessControl } from '../../dashboard_app/access_control/check_user_access_control';
 import { checkGlobalManageControlPrivilege } from '../../dashboard_app/access_control/check_global_manage_control_privilege';
 import type { DashboardSearchOut } from '../../../server/content_management';
@@ -50,7 +50,7 @@ const SAVED_OBJECTS_PER_PAGE_SETTING = 'savedObjects:perPage';
 const toTableListViewSavedObject = (
   hit: DashboardSearchOut['hits'][number],
   canManageAccessControl: boolean,
-  authorName: string | null
+  authorName?: string
 ): DashboardSavedObjectUserContent => {
   const { title, description, timeRestore } = hit.attributes;
   return {
@@ -205,7 +205,7 @@ export const useDashboardListingTable = ({
   );
 
   const findItems = useCallback(
-    (
+    async (
       searchTerm: string,
       {
         references,
@@ -216,54 +216,53 @@ export const useDashboardListingTable = ({
       } = {}
     ) => {
       const searchStartTime = window.performance.now();
+      const { total, hits } = await dashboardContentManagementService.findDashboards.search({
+        search: searchTerm,
+        size: listingLimit,
+        hasReference: references,
+        hasNoReference: referencesToExclude,
+        options: {
+          // include only tags references in the response to save bandwidth
+          includeReferences: ['tag'],
+          fields: ['title', 'description', 'timeRestore'],
+        },
+      });
 
-      return dashboardContentManagementService.findDashboards
-        .search({
-          search: searchTerm,
-          size: listingLimit,
-          hasReference: references,
-          hasNoReference: referencesToExclude,
-          options: {
-            // include only tags references in the response to save bandwidth
-            includeReferences: ['tag'],
-            fields: ['title', 'description', 'timeRestore'],
-          },
-        })
-        .then(async ({ total, hits }) => {
-          const user = await coreServices.security.authc.getCurrentUser();
-          const isGloballyAuthorized = await checkGlobalManageControlPrivilege();
+      const [user, isGloballyAuthorized, authorNames] = await Promise.all([
+        coreServices.security.authc.getCurrentUser(),
+        checkGlobalManageControlPrivilege(),
+        getBulkAuthorNames(hits.map((hit) => hit.accessControl?.owner || hit.createdBy)),
+      ]);
 
-          const searchEndTime = window.performance.now();
-          const searchDuration = searchEndTime - searchStartTime;
-          reportPerformanceMetricEvent(coreServices.analytics, {
-            eventName: SAVED_OBJECT_LOADED_TIME,
-            duration: searchDuration,
-            meta: {
-              saved_object_type: DASHBOARD_CONTENT_ID,
-            },
-          });
-          const result = await Promise.all(
-            hits.map(async (hit) => {
-              const canManageAccessControl =
-                isGloballyAuthorized ||
-                checkUserAccessControl({
-                  accessControl: hit.accessControl,
-                  createdBy: hit.createdBy,
-                  userId: user.profile_uid,
-                });
+      const searchEndTime = window.performance.now();
+      const searchDuration = searchEndTime - searchStartTime;
+      reportPerformanceMetricEvent(coreServices.analytics, {
+        eventName: SAVED_OBJECT_LOADED_TIME,
+        duration: searchDuration,
+        meta: {
+          saved_object_type: DASHBOARD_CONTENT_ID,
+        },
+      });
 
-              const authorName = await getDashboardAuthorName(
-                hit.accessControl?.owner || hit.createdBy
-              );
-              return toTableListViewSavedObject(hit, canManageAccessControl, authorName);
-            })
-          );
+      const results = hits.map((hit) => {
+        const canManageAccessControl =
+          isGloballyAuthorized ||
+          (user &&
+            checkUserAccessControl({
+              accessControl: hit.accessControl,
+              createdBy: hit.createdBy,
+              userId: user.profile_uid,
+            })) ||
+          false;
 
-          return {
-            total,
-            hits: result,
-          };
-        });
+        const authorName = authorNames.find(
+          (author) => hit.accessControl?.owner === author.id || hit.createdBy === author.id
+        );
+
+        return toTableListViewSavedObject(hit, canManageAccessControl, authorName?.username);
+      });
+
+      return { total, hits: results };
     },
     [listingLimit, dashboardContentManagementService]
   );
@@ -322,7 +321,6 @@ export const useDashboardListingTable = ({
     const { showWriteControls } = getDashboardCapabilities();
     return {
       contentEditor: {
-        isReadonly: !showWriteControls,
         onSave: updateItemMeta,
         customValidators: contentEditorValidators,
       },
@@ -356,34 +354,16 @@ export const useDashboardListingTable = ({
 
         const getReason = () => {
           if (!showWriteControls) {
-            return i18n.translate(
-              'contentManagement.contentEditor.metadataForm.readOnlyToolTip.role',
-              {
-                defaultMessage:
-                  "You don't have permissions to edit this dashboard. Contact your admin to change your role.",
-              }
-            );
+            return contentManagementFlyoutStrings.contentEditor.readonlyReason.noPrivilege;
           }
           if (item?.managed) {
-            return i18n.translate(
-              'contentManagement.contentEditor.metadataForm.readOnlyToolTip.managed',
-              {
-                defaultMessage:
-                  'This dashboard is managed by Elastic. Duplicate it to make changes.',
-              }
-            );
+            return contentManagementFlyoutStrings.contentEditor.readonlyReason.managed;
           }
           if (item?.canManageAccessControl === false) {
-            return i18n.translate(
-              'contentManagement.contentEditor.metadataForm.readOnlyToolTip.default.accessControl',
-              {
-                defaultMessage:
-                  "You don't have permissions to edit this dashboard. Contact {authorName} or an admin to change it.",
-                values: { authorName: item?.authorName || 'the author' },
-              }
+            return contentManagementFlyoutStrings.contentEditor.readonlyReason.accessControl(
+              item.authorName
             );
           }
-          return '';
         };
 
         return {
