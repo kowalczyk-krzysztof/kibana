@@ -22,6 +22,7 @@ import { DEFAULT_REFRESH_SETTING } from '../constants';
 import type { PreflightCheckForCreateResult } from './internals/preflight_check_for_create';
 import { getSavedObjectNamespaces, getCurrentTime, normalizeNamespace, setManaged } from './utils';
 import type { ApiExecutionContext } from './types';
+import { setAccessControl } from './utils/internal_utils';
 
 export interface PerformCreateParams<T = unknown> {
   type: string;
@@ -118,13 +119,11 @@ export const performCreate = async <T>(
     );
   }
 
-  const accessControlToWrite =
-    typeSupportsAccessControl && createdBy
-      ? {
-          owner: createdBy,
-          accessMode: accessMode ?? 'default',
-        }
-      : undefined;
+  const accessControlToWrite = setAccessControl({
+    typeSupportsAccessControl,
+    createdBy,
+    accessMode,
+  });
 
   const authorizationResult = await securityExtension?.authorizeCreate({
     namespace,

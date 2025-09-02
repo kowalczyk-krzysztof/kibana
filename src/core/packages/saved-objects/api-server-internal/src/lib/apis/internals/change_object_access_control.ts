@@ -9,12 +9,12 @@
 import type { estypes } from '@elastic/elasticsearch';
 import { isNotFoundFromUnsupportedServer } from '@kbn/core-elasticsearch-server-internal';
 import {
-  ISavedObjectTypeRegistry,
-  ISavedObjectsSecurityExtension,
-  ISavedObjectsSerializer,
+  type ISavedObjectTypeRegistry,
+  type ISavedObjectsSecurityExtension,
+  type ISavedObjectsSerializer,
   SavedObjectsErrorHelpers,
-  SavedObjectsRawDoc,
-  SavedObjectsRawDocSource,
+  type SavedObjectsRawDoc,
+  type SavedObjectsRawDocSource,
 } from '@kbn/core-saved-objects-server';
 import type {
   SavedObjectsChangeAccessControlResponse,
@@ -34,8 +34,8 @@ import {
   left,
   right,
 } from '../utils';
-import { ApiExecutionContext } from '../types';
-import { GetBulkOperationErrorRawResponse } from '../utils/internal_utils';
+import type { ApiExecutionContext } from '../types';
+import { type GetBulkOperationErrorRawResponse, isMgetError } from '../utils/internal_utils';
 
 export type ChangeAccessControlActionType = 'changeOwnership' | 'changeAccessMode';
 
@@ -72,6 +72,9 @@ export const isSavedObjectsChangeOwnershipOptions = (
   return 'newOwnerProfileUid' in options;
 };
 
+const VALID_ACCESS_MODES = ['default', 'read_only'] as const;
+type AccessMode = (typeof VALID_ACCESS_MODES)[number];
+
 const validateChangeAccessControlParams = ({
   actionType,
   newOwnerProfileUid,
@@ -100,8 +103,7 @@ const validateChangeAccessControlParams = ({
   if (
     actionType === 'changeAccessMode' &&
     accessMode !== undefined &&
-    accessMode !== 'default' &&
-    accessMode !== 'read_only'
+    !VALID_ACCESS_MODES.includes(accessMode as AccessMode)
   ) {
     throw SavedObjectsErrorHelpers.createBadRequestError(
       'When specified, the "accessMode" field can only be "default" or "read_only".'
@@ -357,7 +359,3 @@ export const changeObjectAccessControl = async (
     ),
   };
 };
-
-function isMgetError(doc?: estypes.MgetResponseItem<unknown>): doc is estypes.MgetMultiGetError {
-  return Boolean(doc && 'error' in doc);
-}

@@ -27,6 +27,7 @@ import {
 export interface GetBulkOperationErrorRawResponse {
   status: number;
   error: { type: string; reason?: string | null; index: string };
+  // Other fields are present on a bulk operation result but they are irrelevant for this function
 }
 
 /**
@@ -296,4 +297,27 @@ export const errorContent = (error: DecoratedError) => error.output.payload;
 
 export function isMgetDoc(doc?: estypes.MgetResponseItem<unknown>): doc is estypes.GetGetResult {
   return Boolean(doc && 'found' in doc);
+}
+
+export function isMgetError(
+  doc?: estypes.MgetResponseItem<unknown>
+): doc is estypes.MgetMultiGetError {
+  return Boolean(doc && 'error' in doc);
+}
+
+export function setAccessControl({
+  typeSupportsAccessControl,
+  createdBy,
+  accessMode,
+}: {
+  typeSupportsAccessControl: boolean;
+  createdBy?: string;
+  accessMode?: 'default' | 'read_only';
+}) {
+  return typeSupportsAccessControl && createdBy
+    ? {
+        owner: createdBy,
+        accessMode: accessMode ?? 'default',
+      }
+    : undefined;
 }
