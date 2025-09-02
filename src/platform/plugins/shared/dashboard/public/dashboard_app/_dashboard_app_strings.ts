@@ -147,6 +147,21 @@ export const shareModalStrings = {
         'This dashboard has unsaved changes. Consider saving your dashboard before generating the {shareType}.',
       values: { shareType: shareType === 'embed' ? 'embed code' : 'link' },
     }),
+  accessModeUpdateSuccess: i18n.translate('dashboard.share.changeAccessMode.success.title', {
+    defaultMessage: 'Permissions updated.',
+  }),
+  accessModeUpdateError: i18n.translate('dashboard.share.changeAccessMode.error.title', {
+    defaultMessage: 'Failed to update permissions.',
+  }),
+  draftModeCalloutTitle: i18n.translate('dashboard.share.shareModal.draftModeCallout.title', {
+    defaultMessage: '"Dashboard has unsaved changes',
+  }),
+  draftModeSaveButtonLabel: i18n.translate(
+    'dashboard.share.shareModal.draftModeCallout.saveButton',
+    {
+      defaultMessage: 'Save',
+    }
+  ),
 };
 
 /*

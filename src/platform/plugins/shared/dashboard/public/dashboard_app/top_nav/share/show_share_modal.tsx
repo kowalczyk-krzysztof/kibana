@@ -82,15 +82,11 @@ export function ShowShareModal({
     try {
       await changeAccessMode(accessMode);
       coreServices.notifications.toasts.addSuccess({
-        title: i18n.translate('dashboard.share.changeAccessMode.success.title', {
-          defaultMessage: 'Permissions updated',
-        }),
+        title: shareModalStrings.accessModeUpdateSuccess,
       });
     } catch (error) {
-      coreServices.notifications.toasts.addError(error instanceof Error ? error.message : error, {
-        title: i18n.translate('dashboard.share.changeAccessMode.error.title', {
-          defaultMessage: 'Failed to update permissions',
-        }),
+      coreServices.notifications.toasts.addError(error?.message, {
+        title: shareModalStrings.accessModeUpdateError,
       });
     }
   };
@@ -232,12 +228,7 @@ export function ShowShareModal({
         color="warning"
         iconType="info"
         data-test-subj="DashboardDraftModeCopyLinkCallOut"
-        title={
-          <FormattedMessage
-            id="dashboard.share.shareModal.draftModeCallout.title"
-            defaultMessage="Dashboard has unsaved changes"
-          />
-        }
+        title={shareModalStrings.draftModeCalloutTitle}
       >
         {type === 'embed' ? <EmbedCalloutBody /> : <LinkCalloutBody />}
         <EuiButton
@@ -248,10 +239,7 @@ export function ShowShareModal({
           data-test-subj="DashboardDraftModeSaveButton"
           onClick={handleSaveDashboard}
         >
-          <FormattedMessage
-            id="dashboard.share.shareModal.draftModeCallout.saveButton"
-            defaultMessage="Save"
-          />
+          {shareModalStrings.draftModeSaveButtonLabel}
         </EuiButton>
       </EuiCallOut>
     );

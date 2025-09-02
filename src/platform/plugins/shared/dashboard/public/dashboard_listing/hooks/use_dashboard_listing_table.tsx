@@ -228,11 +228,16 @@ export const useDashboardListingTable = ({
         },
       });
 
-      const [user, isGloballyAuthorized, authorNames] = await Promise.all([
+      const [userRes, globalAuthRes, authorRes] = await Promise.allSettled([
         coreServices.security.authc.getCurrentUser(),
         checkGlobalManageControlPrivilege(),
         getBulkAuthorNames(hits.map((hit) => hit.accessControl?.owner || hit.createdBy)),
       ]);
+
+      const user = userRes.status === 'fulfilled' ? userRes.value : null;
+      const isGloballyAuthorized =
+        globalAuthRes.status === 'fulfilled' ? globalAuthRes.value : false;
+      const authorNames = authorRes.status === 'fulfilled' ? authorRes.value : [];
 
       const searchEndTime = window.performance.now();
       const searchDuration = searchEndTime - searchStartTime;
