@@ -234,7 +234,7 @@ export const useDashboardListingTable = ({
         getBulkAuthorNames(hits.map((hit) => hit.accessControl?.owner || hit.createdBy)),
       ]);
 
-      const user = userRes.status === 'fulfilled' ? userRes.value : null;
+      const user = userRes.status === 'fulfilled' ? userRes.value : undefined;
       const isGloballyAuthorized =
         globalAuthRes.status === 'fulfilled' ? globalAuthRes.value : false;
       const authorNames = authorRes.status === 'fulfilled' ? authorRes.value : [];

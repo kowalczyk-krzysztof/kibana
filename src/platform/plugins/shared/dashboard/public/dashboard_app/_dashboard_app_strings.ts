@@ -198,12 +198,12 @@ export const topNavStrings = {
       defaultMessage: 'Switch to edit mode',
     }),
     readOnlyTooltip: (authorName: string | null) =>
-      i18n.translate('dashboard.topNave.editButtonTooltip', {
+      i18n.translate('dashboard.topNave.editButtonTooltip.readOnly', {
         defaultMessage:
           "You don't have permission to edit this dashboard. Contact {authorName} or an admin to change it.",
         values: { authorName: authorName || 'the author' },
       }),
-    managedDashboardTooltip: i18n.translate('dashboard.topNave.editManagedTooltip', {
+    managedDashboardTooltip: i18n.translate('dashboard.editButtonTooltip.managed', {
       defaultMessage: 'This dashboard is managed by Elastic. Duplicate it to make changes.',
     }),
   },
@@ -257,15 +257,15 @@ export const topNavStrings = {
     tooltipTitle: i18n.translate('dashboard.topNave.shareTooltipTitle', {
       defaultMessage: 'Share',
     }),
-    readOnlyModeTooltipContent: i18n.translate(
-      'dashboard.topNave.shareButtonReadOnlyModeTooltipContent',
+    readOnlyModeTooltipContent: i18n.translate('dashboard.topNave.shareTooltipContent.readOnly', {
+      defaultMessage: 'Everybody in this space can view',
+    }),
+    editModeTooltipContent: i18n.translate(
+      'dashboard.topNave.shareButtonEditModeTooltipContent.editable',
       {
-        defaultMessage: 'Everybody in this space can view',
+        defaultMessage: 'Everybody in this space can edit',
       }
     ),
-    editModeTooltipContent: i18n.translate('dashboard.topNave.shareButtonEditModeTooltipContent', {
-      defaultMessage: 'Everybody in this space can edit',
-    }),
   },
   settings: {
     label: i18n.translate('dashboard.topNave.settingsButtonAriaLabel', {
@@ -322,14 +322,11 @@ export const contentManagementFlyoutStrings = {
         defaultMessage: 'This dashboard is managed by Elastic. Duplicate it to make changes.',
       }),
       accessControl: (authorName?: string) =>
-        i18n.translate(
-          'contentManagement.contentEditor.metadataForm.readOnlyToolTip.default.accessControl',
-          {
-            defaultMessage:
-              "You don't have permissions to edit this dashboard. Contact {authorName} or an admin to change it.",
-            values: { authorName: authorName || 'the author' },
-          }
-        ),
+        i18n.translate('dashboard.contentManagement.contentEditor.readonlyReason.accessControl', {
+          defaultMessage:
+            "You don't have permissions to edit this dashboard. Contact {authorName} or an admin to change it.",
+          values: { authorName: authorName || 'the author' },
+        }),
       noPrivilege: i18n.translate(
         'dashboard.contentManagement.contentEditor.readonlyReason.noPrivilege',
         {
