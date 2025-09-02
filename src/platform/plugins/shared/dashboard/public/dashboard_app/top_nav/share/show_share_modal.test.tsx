@@ -70,6 +70,7 @@ describe('ShowShareModal', () => {
     anchorElement: document.createElement('div'),
     canSave: true,
     saveDashboard: jest.fn(),
+    changeAccessMode: jest.fn(),
   };
 
   it('locatorParams is missing all unsaved state when none is given', () => {
