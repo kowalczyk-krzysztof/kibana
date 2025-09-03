@@ -57,12 +57,12 @@ export const useDashboardMenuItems = ({
     createdBy: dashboardApi.createdBy,
   });
 
-  useEffect(() => {
-    // If we are in edit mode but the user doesn't have edit permissions and the dashboard is not new, switch to view mode.
-    if (viewMode === 'edit' && lastSavedId && !isInEditAccessMode && !canManageAccessControl) {
-      dashboardApi.setViewMode('view');
-    }
-  }, [canManageAccessControl, isInEditAccessMode, dashboardApi, viewMode, lastSavedId]);
+  // useEffect(() => {
+  //   // If we are in edit mode but the user doesn't have edit permissions and the dashboard is not new, switch to view mode.
+  //   if (viewMode === 'edit' && lastSavedId && !isInEditAccessMode && !canManageAccessControl) {
+  //     dashboardApi.setViewMode('view');
+  //   }
+  // }, [canManageAccessControl, isInEditAccessMode, dashboardApi, viewMode, lastSavedId]);
 
   const isEditButtonDisabled = useMemo(() => {
     if (disableTopNav) return true;
