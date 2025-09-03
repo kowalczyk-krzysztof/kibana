@@ -47,6 +47,9 @@ export function useOpenContentEditor() {
         size: 'm',
         ownFocus: true,
         onClose: closeFlyout,
+        closeButtonProps: {
+          'data-test-subj': 'closeFlyoutButton',
+        },
       });
 
       return closeFlyout;
