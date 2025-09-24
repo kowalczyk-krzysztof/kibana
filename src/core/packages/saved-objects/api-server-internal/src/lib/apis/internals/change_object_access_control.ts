@@ -163,13 +163,13 @@ export const changeObjectAccessControl = async (
    * Valid objects will then be used for rewriting back to the index once authz and access control
    * checks are done and valid.
    */
-  let bulkGetRequestIndexCounter = 0;
+
   const expectedBulkGetResults: Array<
     Either<
       { id: string; type: string; error: any },
       { id: string; type: string; esRequestIndex: number }
     >
-  > = objects.map((object) => {
+  > = objects.map((object, index) => {
     const { type, id } = object;
 
     if (!allowedTypes.includes(type)) {
@@ -186,7 +186,7 @@ export const changeObjectAccessControl = async (
     return right({
       type,
       id,
-      esRequestIndex: bulkGetRequestIndexCounter++,
+      esRequestIndex: index,
     });
   });
 
@@ -223,15 +223,15 @@ export const changeObjectAccessControl = async (
   const authObjects = validObjects.map((element) => {
     const { type, id, esRequestIndex: index } = element.value;
 
-    const preflightResult = bulkGetResponse?.body.docs[index];
+    const preflightResult = bulkGetResponse?.body.docs[
+      index
+    ] as estypes.GetGetResult<SavedObjectsRawDocSource>;
 
     return {
       type,
       id,
-      // @ts-expect-error MultiGetHit._source is optional
       existingNamespaces: preflightResult?._source?.namespaces ?? [],
-      // @ts-expect-error MultiGetHit._source is optional
-      accessControl: preflightResult?._source?.accessControl ?? {},
+      accessControl: preflightResult?._source?.accessControl,
     };
   });
 
@@ -245,11 +245,16 @@ export const changeObjectAccessControl = async (
 
   const time = new Date().toISOString();
   let bulkOperationRequestIndexCounter = 0;
-  const bulkOperationParams: estypes.BulkOperationContainer[] = [];
+  const bulkOperationParams: estypes.BulkRequest['operations'] = [];
   const expectedBulkOperationResults: Array<
     Either<
       { id: string; type: string; error: any },
-      { id: string; type: string; esRequestIndex: number }
+      {
+        id: string;
+        type: string;
+        esRequestIndex: number;
+        doc: estypes.GetGetResult<SavedObjectsRawDocSource>;
+      }
     >
   > = expectedBulkGetResults.map((expectedBulkGetResult) => {
     if (isLeft(expectedBulkGetResult)) {
@@ -257,13 +262,14 @@ export const changeObjectAccessControl = async (
     }
 
     const { id, type, esRequestIndex } = expectedBulkGetResult.value;
-    const doc = bulkGetResponse!.body.docs[esRequestIndex];
-    if (
-      isMgetError(doc) ||
-      !doc?.found ||
-      // @ts-expect-error MultiGetHit._source is optional
-      !rawDocExistsInNamespace(registry, doc, namespace)
-    ) {
+    const rawDoc = bulkGetResponse!.body.docs[esRequestIndex];
+
+    if (isMgetError(rawDoc) || !rawDoc?.found) {
+      const error = SavedObjectsErrorHelpers.createGenericNotFoundError(type, id);
+      return left({ id, type, error });
+    }
+
+    if (!rawDocExistsInNamespace(registry, rawDoc as unknown as SavedObjectsRawDoc, namespace)) {
       const error = SavedObjectsErrorHelpers.createGenericNotFoundError(type, id);
       return left({ id, type, error });
     }
@@ -282,18 +288,12 @@ export const changeObjectAccessControl = async (
       return left({ id, type, error });
     }
 
-    const currentSource = doc._source;
+    const currentSource = rawDoc._source;
 
     const versionProperties = getExpectedVersionProperties(
       undefined,
-      doc as unknown as SavedObjectsRawDoc
+      rawDoc as unknown as SavedObjectsRawDoc
     );
-
-    const expectedResult = {
-      type,
-      id,
-      esRequestIndex: bulkOperationRequestIndexCounter++,
-    };
 
     const documentMetadata = {
       _id: serializer.generateRawId(undefined, type, id),
@@ -322,10 +322,15 @@ export const changeObjectAccessControl = async (
         },
       };
     }
-    // @ts-expect-error BulkOperation.retry_on_conflict, BulkOperation.routing. BulkOperation.version, and BulkOperation.version_type are optional
+
     bulkOperationParams.push({ update: documentMetadata }, { doc: documentToSave });
 
-    return right(expectedResult);
+    return right({
+      type,
+      id,
+      esRequestIndex: bulkOperationRequestIndexCounter++,
+      doc: rawDoc,
+    });
   });
 
   const bulkOperationResponse = bulkOperationParams.length
