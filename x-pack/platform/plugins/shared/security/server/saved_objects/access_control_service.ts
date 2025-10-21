@@ -19,31 +19,48 @@ import { SecurityAction } from '.';
 
 export const MANAGE_ACCESS_CONTROL_ACTION = 'manage_access_control';
 
+interface AccessControlServiceParams {
+  typeRegistry?: ISavedObjectTypeRegistry;
+}
+
 export class AccessControlService {
   private userForOperation: AuthenticatedUser | null = null;
+  private typeRegistry: ISavedObjectTypeRegistry | undefined;
+
+  constructor({ typeRegistry }: AccessControlServiceParams) {
+    this.typeRegistry = typeRegistry;
+  }
 
   setUserForOperation(user: AuthenticatedUser | null) {
     this.userForOperation = user;
   }
 
-  getTypesRequiringPrivilegeCheck({
-    objects,
-    typeRegistry,
-    actions,
-  }: {
-    objects: AuthorizeObject[];
-    typeRegistry?: ISavedObjectTypeRegistry;
+  shouldObjectRequireAccessControl(params: {
+    object: AuthorizeObject;
+    currentUser: AuthenticatedUser | null;
     actions: Set<SecurityAction>;
-  }): GetTypesRequiringAccessControlCheckResult {
-    if (!typeRegistry) {
-      return { typesRequiringAccessControl: new Set<string>(), results: [] };
-    }
-    const currentUser = this.userForOperation;
-    const typesRequiringAccessControl = new Set<string>();
+  }) {
+    const { object, currentUser, actions } = params;
 
-    // This is all here because our authz functions support multiple actions at once.
-    // This is not a real use case, but we need to handle it anyway.
+    if (!this.typeRegistry?.supportsAccessControl(object.type)) {
+      return false;
+    }
+
+    const { accessControl } = object;
+    if (!accessControl) {
+      return false;
+    }
+
+    // Note: We will ultimately have to check privileges even if there is no
+    // current user because we will need to support actions via HTTP APIs,
+    // like import
+    if (!accessControl.owner || !currentUser) {
+      return false;
+    }
+
     const actionsIgnoringDefaultMode = new Set([
+      SecurityAction.CREATE,
+      SecurityAction.BULK_CREATE,
       SecurityAction.UPDATE,
       SecurityAction.BULK_UPDATE,
       SecurityAction.DELETE,
@@ -54,26 +71,42 @@ export class AccessControlService {
       (item) => !actionsIgnoringDefaultMode.has(item)
     );
 
-    const results: AccessControlAuthorizeResult[] = objects.map((obj) => {
-      let requiresManageAccessControl = false;
+    if (!anyActionsForcingDefaultCheck && accessControl.accessMode === 'default') {
+      return false;
+    }
 
-      // Alternatively just make two different checks based on anyActionsForcingDefaultCheck just for readability sake
-      if (
-        // ToDo: This logic behaves strangely if accessControl.mode is undefined, which for some reason it can be?
-        // Shouldn't we only need to check that accessControl is defined?
-        typeRegistry.supportsAccessControl(obj.type) &&
-        (obj.accessControl?.accessMode === 'read_only' || anyActionsForcingDefaultCheck) &&
-        obj.accessControl?.owner &&
-        currentUser && // Sid - if we don't have a user, should't we ultimately throw?
-        obj.accessControl.owner !== currentUser.profile_uid
-      ) {
-        typesRequiringAccessControl.add(obj.type);
-        requiresManageAccessControl = true;
+    return accessControl.owner !== currentUser.profile_uid;
+  }
+
+  getTypesRequiringPrivilegeCheck({
+    objects,
+    actions,
+  }: {
+    objects: AuthorizeObject[];
+
+    actions: Set<SecurityAction>;
+  }): GetTypesRequiringAccessControlCheckResult {
+    if (!this.typeRegistry) {
+      return { typesRequiringAccessControl: new Set<string>(), results: [] };
+    }
+    const currentUser = this.userForOperation;
+    const typesRequiringAccessControl = new Set<string>();
+
+    const results: AccessControlAuthorizeResult[] = objects.map((object) => {
+      const requiresManageAccessControl = this.shouldObjectRequireAccessControl({
+        object,
+        currentUser,
+        actions,
+      });
+
+      if (requiresManageAccessControl) {
+        typesRequiringAccessControl.add(object.type);
       }
+
       return {
-        type: obj.type,
-        id: obj.id,
-        ...(obj.name && { name: obj.name }),
+        type: object.type,
+        id: object.id,
+        ...(object.name && { name: object.name }),
         requiresManageAccessControl,
       };
     });
@@ -87,13 +120,16 @@ export class AccessControlService {
     authorizationResult,
     typesRequiringAccessControl,
     currentSpace,
+    addAuditEventFn,
   }: {
     authorizationResult: CheckAuthorizationResult<A>;
     typesRequiringAccessControl: Set<string>;
     currentSpace: string;
+    addAuditEventFn?: (types: string[]) => void;
   }) {
     if (authorizationResult.status === 'unauthorized') {
-      const typeList = [...typesRequiringAccessControl].sort().join(',');
+      const typeList = [...typesRequiringAccessControl].sort();
+      addAuditEventFn?.(typeList);
       throw SavedObjectsErrorHelpers.decorateForbiddenError(
         new Error(`Access denied: Unable to manage access control for ${typeList}`)
       );
@@ -103,6 +139,9 @@ export class AccessControlService {
     const unauthorizedTypes: Set<string> = new Set();
 
     for (const type of typesRequiringAccessControl) {
+      if (!this.typeRegistry?.supportsAccessControl(type)) {
+        continue;
+      }
       const typeAuth = typeMap.get(type);
       const accessControlAuth = typeAuth?.[MANAGE_ACCESS_CONTROL_ACTION as A];
       if (!accessControlAuth) {
@@ -120,7 +159,8 @@ export class AccessControlService {
     }
     // If we found unauthorized types, throw an error
     if (unauthorizedTypes.size > 0) {
-      const typeList = [...unauthorizedTypes].sort().join(',');
+      const typeList = [...unauthorizedTypes].sort();
+      addAuditEventFn?.(typeList);
       throw SavedObjectsErrorHelpers.decorateForbiddenError(
         new Error(`Access denied: Unable to manage access control for ${typeList}`)
       );

@@ -99,7 +99,11 @@ const validateChangeAccessControlParams = ({
       );
     }
   }
-
+  if (actionType === 'changeAccessMode' && accessMode === undefined) {
+    throw SavedObjectsErrorHelpers.createBadRequestError(
+      'The "accessMode" field is required to change access mode of a saved object.'
+    );
+  }
   if (
     actionType === 'changeAccessMode' &&
     accessMode !== undefined &&
@@ -194,7 +198,7 @@ export const changeObjectAccessControl = async (
   if (validObjects.length === 0) {
     // We only have error results; return early to avoid potentially trying authZ checks for 0 types which would result in an exception.
     return {
-      objects: expectedBulkGetResults.filter(isLeft).map(({ value }) => value),
+      objects: expectedBulkGetResults.map(({ value }) => value),
     };
   }
 
@@ -223,7 +227,7 @@ export const changeObjectAccessControl = async (
   const authObjects = validObjects.map((element) => {
     const { type, id, esRequestIndex: index } = element.value;
 
-    const preflightResult = bulkGetResponse?.body.docs[
+    const preflightResult = bulkGetResponse.body.docs[
       index
     ] as estypes.GetGetResult<SavedObjectsRawDocSource>;
 
@@ -312,12 +316,11 @@ export const changeObjectAccessControl = async (
         },
       };
     } else {
-      const ownerFromSource = currentSource?.accessControl?.owner;
       documentToSave = {
         updated_at: time,
         updated_by: currentUserProfileUid,
         accessControl: {
-          owner: ownerFromSource,
+          ...(currentSource?.accessControl || {}),
           accessMode: accessMode ?? 'default',
         },
       };
