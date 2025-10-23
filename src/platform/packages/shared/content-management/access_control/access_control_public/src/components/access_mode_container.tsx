@@ -40,7 +40,7 @@ const selectOptions = [
     ),
   },
   {
-    value: 'read_only',
+    value: 'write_restricted',
     text: (
       <FormattedMessage
         id="contentManagement.accessControl.accessMode.container.select.options.isReadOnly"
