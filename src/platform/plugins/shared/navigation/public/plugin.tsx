@@ -9,6 +9,7 @@
 
 import type { Observable } from 'rxjs';
 import { of, ReplaySubject, take, map, switchMap } from 'rxjs';
+import React from 'react';
 import type {
   PluginInitializerContext,
   CoreSetup,
@@ -29,6 +30,7 @@ import type {
 } from './types';
 import { TopNavMenuExtensionsRegistry, createTopNav } from './top_nav_menu';
 import type { RegisteredTopNavMenuData } from './top_nav_menu/top_nav_menu_data';
+import { CustomizeNavigationMenuItem } from './customize_navigation_menu_item';
 
 export class NavigationPublicPlugin
   implements
@@ -64,7 +66,7 @@ export class NavigationPublicPlugin
   ): NavigationPublicStart {
     this.coreStart = core;
 
-    const { unifiedSearch, cloud, spaces } = depsStart;
+    const { unifiedSearch, cloud, spaces, security } = depsStart;
     const extensions = this.topNavMenuExtensionsRegistry.getAll();
     const chrome = core.chrome as InternalChromeStart;
     const activeSpace$: Observable<Space | undefined> = spaces?.getActiveSpace$() ?? of(undefined);
@@ -114,6 +116,31 @@ export class NavigationPublicPlugin
       initSolutionNavigation();
     } else {
       activeSpace$.pipe(take(1)).subscribe(initSolutionNavigation);
+    }
+
+    // Register the customize navigation menu item in the user menu
+    if (security && this.isSolutionNavEnabled) {
+      security.navControlService.addUserMenuLinks([
+        {
+          content: ({ closePopover }) => (
+            <CustomizeNavigationMenuItem
+              core={core}
+              closePopover={closePopover}
+              getNavigationPrimaryItems={() => chrome.project.getNavigationPrimaryItems()}
+              setNavigationCustomization={(id, customization) =>
+                chrome.project.setNavigationCustomization(id, customization)
+              }
+              setIsEditingNavigation={(isEditing) =>
+                chrome.project.setIsEditingNavigation(isEditing)
+              }
+            />
+          ),
+          order: 500,
+          label: '',
+          iconType: '',
+          href: '',
+        },
+      ]);
     }
 
     return {

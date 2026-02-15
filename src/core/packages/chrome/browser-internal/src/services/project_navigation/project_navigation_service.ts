@@ -51,6 +51,7 @@ import type { FeatureFlagsStart } from '@kbn/core-feature-flags-browser';
 import { findActiveNodes, flattenNav, parseNavigationTree, stripQueryParams } from './utils';
 import { buildBreadcrumbs } from './breadcrumbs';
 import { getCloudLinks } from './cloud_links';
+import { ProjectNavigationCustomizationService } from './project_navigation_customization_service';
 
 interface StartDeps {
   application: InternalApplicationStart;
@@ -63,6 +64,8 @@ interface StartDeps {
 }
 
 export class ProjectNavigationService {
+  private readonly customizationService = new ProjectNavigationCustomizationService();
+
   private logger: Logger | undefined;
   private projectHome$ = new BehaviorSubject<string | undefined>(undefined);
   private kibanaName$ = new BehaviorSubject<string | undefined>(undefined);
@@ -157,6 +160,8 @@ export class ProjectNavigationService {
         this.initNavigation(id, navTreeDefinition$, config);
       },
       getNavigationTreeUi$: this.getNavigationTreeUi$.bind(this),
+      getNavigationPrimaryItems: () =>
+        this.customizationService.getNavigationPrimaryItems(this.navigationTreeUi$.getValue()),
       getActiveNodes$: () => {
         return this.activeNodes$.pipe(takeUntil(this.stop$), distinctUntilChanged(deepEqual));
       },
@@ -193,6 +198,14 @@ export class ProjectNavigationService {
       getSolutionsNavDefinitions$: this.getSolutionsNavDefinitions$.bind(this),
       /** In stateful Kibana, update the registered solution navigations */
       updateSolutionNavigations: this.updateSolutionNavigations.bind(this),
+      setNavigationCustomization: this.customizationService.setNavigationCustomization.bind(
+        this.customizationService
+      ),
+      setIsEditingNavigation: this.customizationService.setIsEditingNavigation.bind(
+        this.customizationService
+      ),
+      /** Whether navigation is being edited  */
+      getIsEditing$: () => this.customizationService.getIsEditing$(),
       /** In stateful Kibana, change the active solution navigation */
       changeActiveSolutionNavigation: this.changeActiveSolutionNavigation.bind(this),
       /** In stateful Kibana, get the active solution navigation definition */
@@ -352,7 +365,19 @@ export class ProjectNavigationService {
           this.setProjectHome(navLink.href);
         });
 
-        this.initNavigation(nextId, definition.navigationTree$, {
+        // Merge original tree with customization configuration if it exists for this solution
+        const effectiveTree$ = combineLatest([
+          definition.navigationTree$,
+          this.customizationService.getCustomizations$(),
+        ]).pipe(
+          map(([original, customizations]) => {
+            const customization = customizations[nextId];
+            if (!customization) return original;
+            return this.customizationService.applyCustomization(original, customization);
+          })
+        );
+
+        this.initNavigation(nextId, effectiveTree$, {
           dataTestSubj: definition.dataTestSubj,
         });
       });

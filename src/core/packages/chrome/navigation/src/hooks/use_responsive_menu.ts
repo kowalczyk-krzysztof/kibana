@@ -30,12 +30,18 @@ interface ResponsiveMenuState {
  *
  * @param isCollapsed - whether the side nav is currently collapsed (affects layout recalculation).
  * @param items - all primary navigation items, in priority order.
+ * @param hasUserHiddenItems - Whether there are user-hidden items that would be moved to the
+ * overflow menu (affects available height).
  * @returns an object containing:
  * - `primaryMenuRef` - a ref to the primary menu.
  * - `visibleMenuItems` - the visible menu items.
  * - `overflowMenuItems` - the overflow menu items.
  */
-export function useResponsiveMenu(isCollapsed: boolean, items: MenuItem[]): ResponsiveMenuState {
+export function useResponsiveMenu(
+  isCollapsed: boolean,
+  items: MenuItem[],
+  hasUserHiddenItems: boolean = false
+): ResponsiveMenuState {
   const primaryMenuRef = useRef<HTMLElement | null>(null);
   const heightsCacheRef = useRef<number[]>([]);
 
@@ -62,11 +68,16 @@ export function useResponsiveMenu(isCollapsed: boolean, items: MenuItem[]): Resp
     const childrenGap = getStyleProperty(menu, 'gap');
 
     // 2. Calculate the number of visible menu items
-    const nextVisibleCount = countVisibleMenuItems(childrenHeights, childrenGap, menuHeight);
+    const nextVisibleCount = countVisibleMenuItems(
+      childrenHeights,
+      childrenGap,
+      menuHeight,
+      hasUserHiddenItems
+    );
 
     // 3. Update the visible count if needed
     setVisibleCount(nextVisibleCount);
-  }, [stableItemsReference]);
+  }, [stableItemsReference, hasUserHiddenItems]);
 
   const [scheduleRecalculation, cancelRecalculation] =
     useRafDebouncedCallback(recalculateMenuLayout);

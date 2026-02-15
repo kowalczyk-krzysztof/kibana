@@ -11,6 +11,7 @@ import type { AggregateQuery, Query } from '@kbn/es-query';
 import type { Observable } from 'rxjs';
 import type { UnifiedSearchPublicPluginStart } from '@kbn/unified-search-plugin/public';
 import type { SolutionNavigationDefinition } from '@kbn/core-chrome-browser';
+import type { SecurityPluginStart } from '@kbn/security-plugin/public';
 import type { CloudSetup, CloudStart } from '@kbn/cloud-plugin/public';
 import type { SpacesPluginSetup, SpacesPluginStart } from '@kbn/spaces-plugin/public';
 import type {
@@ -63,6 +64,7 @@ export interface NavigationPublicStartDependencies {
   unifiedSearch: UnifiedSearchPublicPluginStart;
   cloud?: CloudStart;
   spaces?: SpacesPluginStart;
+  security?: SecurityPluginStart;
 }
 
 export type SolutionType = 'es' | 'oblt' | 'security' | 'analytics';

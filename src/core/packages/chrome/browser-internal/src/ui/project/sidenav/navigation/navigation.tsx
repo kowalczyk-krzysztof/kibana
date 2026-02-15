@@ -30,6 +30,7 @@ export interface ChromeNavigationProps {
   // sidenav state
   isCollapsed: boolean;
   setWidth: (width: number) => void;
+  isEditing$: Observable<boolean>;
 
   // kibana deps
   basePath: BasePath;
@@ -56,6 +57,7 @@ export const Navigation = (props: ChromeNavigationProps) => {
   const dataTestSubj = useObservable(props.dataTestSubj$ ?? EMPTY, undefined);
   const feedbackUrlParams = useObservable(props.feedbackUrlParams$ ?? EMPTY, undefined);
   const isFeedbackEnabled = useObservable(props.isFeedbackEnabled$ ?? EMPTY, true);
+  const isEditing = useObservable(props.isEditing$, false);
 
   if (!state) {
     return null;
@@ -76,6 +78,7 @@ export const Navigation = (props: ChromeNavigationProps) => {
           />
         }
         isCollapsed={props.isCollapsed}
+        isEditing={isEditing}
         setWidth={props.setWidth}
         onToggleCollapsed={props.onToggleCollapsed}
         activeItemId={activeItemId}
