@@ -14,6 +14,8 @@ import {
   EuiButton,
   EuiCallOut,
   EuiCodeBlock,
+  EuiFlexGroup,
+  EuiFlexItem,
   EuiModalBody,
   EuiModalFooter,
   EuiModalHeader,
@@ -22,6 +24,7 @@ import {
 } from '@elastic/eui';
 import type { OverlayStart } from '@kbn/core-overlays-browser';
 import type { RenderingService } from '@kbn/core-rendering-browser';
+import type { FeedbackAction } from '@kbn/core-notifications-browser';
 import { FormattedMessage } from '@kbn/i18n-react';
 
 interface ErrorToastProps {
@@ -30,6 +33,7 @@ interface ErrorToastProps {
   toastMessage: string;
   openModal: OverlayStart['openModal'];
   rendering: RenderingService;
+  getFeedbackAction: () => FeedbackAction | undefined;
 }
 
 interface RequestError extends Error {
@@ -98,23 +102,44 @@ export function showErrorDialog({
   );
 }
 
-export function ErrorToast({ title, error, toastMessage, openModal, rendering }: ErrorToastProps) {
+export function ErrorToast({
+  title,
+  error,
+  toastMessage,
+  openModal,
+  rendering,
+  getFeedbackAction,
+}: ErrorToastProps) {
+  const feedbackAction = getFeedbackAction();
+
   return rendering.addContext(
     <>
       <p data-test-subj="errorToastMessage">{toastMessage}</p>
-      <div className="eui-textRight">
-        <EuiButton
-          size="s"
-          color="danger"
-          data-test-subj="errorToastBtn"
-          onClick={() => showErrorDialog({ title, error, openModal, rendering })}
-        >
-          <FormattedMessage
-            id="core.toasts.errorToast.seeFullError"
-            defaultMessage="See the full error"
-          />
-        </EuiButton>
-      </div>
+      <EuiFlexGroup justifyContent="flexEnd" gutterSize="s">
+        {feedbackAction && (
+          <EuiFlexItem grow={false}>
+            <EuiButton size="s" data-test-subj="errorToastFeedbackBtn" onClick={feedbackAction}>
+              <FormattedMessage
+                id="core.toasts.errorToast.sendFeedback"
+                defaultMessage="Send feedback"
+              />
+            </EuiButton>
+          </EuiFlexItem>
+        )}
+        <EuiFlexItem grow={false}>
+          <EuiButton
+            size="s"
+            color="danger"
+            data-test-subj="errorToastBtn"
+            onClick={() => showErrorDialog({ title, error, openModal, rendering })}
+          >
+            <FormattedMessage
+              id="core.toasts.errorToast.seeFullError"
+              defaultMessage="See the full error"
+            />
+          </EuiButton>
+        </EuiFlexItem>
+      </EuiFlexGroup>
     </>
   );
 }

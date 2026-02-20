@@ -13,7 +13,7 @@ import type { AnalyticsServiceStart, AnalyticsServiceSetup } from '@kbn/core-ana
 import type { IUiSettingsClient } from '@kbn/core-ui-settings-browser';
 import type { OverlayStart } from '@kbn/core-overlays-browser';
 import type { RenderingService } from '@kbn/core-rendering-browser';
-import type { NotificationCoordinator } from '@kbn/core-notifications-browser';
+import type { NotificationCoordinator, FeedbackAction } from '@kbn/core-notifications-browser';
 import { GlobalToastList } from './global_toast_list';
 import { ToastsApi } from './toasts_api';
 import { ToastsTelemetry } from './telemetry';
@@ -29,6 +29,7 @@ interface StartDeps {
   analytics: AnalyticsServiceStart;
   targetDomElement: HTMLElement;
   notificationCoordinator: NotificationCoordinator;
+  getFeedbackAction: () => FeedbackAction | undefined;
 }
 
 export class ToastsService {
@@ -48,8 +49,9 @@ export class ToastsService {
     rendering,
     analytics,
     notificationCoordinator,
+    getFeedbackAction,
   }: StartDeps) {
-    this.api!.start({ overlays, rendering });
+    this.api!.start({ overlays, rendering, getFeedbackAction });
     this.targetDomElement = targetDomElement;
 
     const reportEvent = this.telemetry.start({ analytics });

@@ -18,6 +18,7 @@ interface ErrorToastProps {
   error?: Error;
   title?: string;
   toastMessage?: string;
+  getFeedbackAction?: () => (() => void) | undefined;
 }
 
 let openModal: jest.Mock;
@@ -33,6 +34,7 @@ function getErrorToast(props: ErrorToastProps = {}) {
       title={props.title || 'An error occured'}
       toastMessage={props.toastMessage || 'This is the toast message'}
       rendering={mockRendering}
+      getFeedbackAction={props.getFeedbackAction || (() => undefined)}
     />
   );
 }
@@ -46,6 +48,28 @@ it('should open a modal when clicking button', () => {
   expect(openModal).not.toHaveBeenCalled();
   fireEvent.click(getByTestId('errorToastBtn'));
   expect(openModal).toHaveBeenCalled();
+});
+
+it('should render feedback button when getFeedbackAction returns a function', () => {
+  const mockFeedbackAction = jest.fn();
+  const { getByTestId } = renderWithI18n(
+    getErrorToast({ getFeedbackAction: () => mockFeedbackAction })
+  );
+  expect(getByTestId('errorToastFeedbackBtn')).toBeInTheDocument();
+});
+
+it('should not render feedback button when getFeedbackAction returns undefined', () => {
+  const { queryByTestId } = renderWithI18n(getErrorToast({ getFeedbackAction: () => undefined }));
+  expect(queryByTestId('errorToastFeedbackBtn')).not.toBeInTheDocument();
+});
+
+it('should call feedback action when clicking feedback button', () => {
+  const mockFeedbackAction = jest.fn();
+  const { getByTestId } = renderWithI18n(
+    getErrorToast({ getFeedbackAction: () => mockFeedbackAction })
+  );
+  fireEvent.click(getByTestId('errorToastFeedbackBtn'));
+  expect(mockFeedbackAction).toHaveBeenCalled();
 });
 
 afterAll(() => {

@@ -55,6 +55,7 @@ function startDeps() {
   return {
     overlays: {} as any,
     rendering: renderingServiceMock.create(),
+    getFeedbackAction: () => undefined,
   };
 }
 

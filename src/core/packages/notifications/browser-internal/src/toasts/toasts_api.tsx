@@ -18,6 +18,7 @@ import { mountReactNode } from '@kbn/core-mount-utils-browser-internal';
 import type { MountPoint } from '@kbn/core-mount-utils-browser';
 import type {
   ErrorToastOptions,
+  FeedbackAction,
   IToasts,
   Toast,
   ToastInput,
@@ -79,6 +80,7 @@ const getApmLabels = (errorType: 'ToastError' | 'ToastDanger') => {
 interface StartDeps {
   overlays: OverlayStart;
   rendering: RenderingService;
+  getFeedbackAction: () => FeedbackAction | undefined;
 }
 
 /**
@@ -237,6 +239,7 @@ export class ToastsApi implements IToasts {
           title={options.title}
           toastMessage={message}
           rendering={this.startDeps!.rendering}
+          getFeedbackAction={this.startDeps!.getFeedbackAction}
         />
       ),
       ...options,

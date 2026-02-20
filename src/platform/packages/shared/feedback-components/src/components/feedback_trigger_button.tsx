@@ -56,7 +56,9 @@ export const FeedbackTriggerButton = ({
   }, [checkTelemetryOptIn]);
 
   const handleShowFeedbackContainer = () => {
-    setIsModalOpen(true);
+    // setIsModalOpen(true);
+    // TODO: Remove this, this is for testing only
+    showToast('This is an error toast', 'error');
   };
 
   const handleHideFeedbackContainer = () => {
@@ -87,7 +89,7 @@ export const FeedbackTriggerButton = ({
           isLoading={isLoading}
           disabled={!isOptedIn}
         >
-          <EuiIcon type="comment" size="m" />
+          <EuiIcon type="comment" size="m" aria-hidden={true} />
         </EuiHeaderSectionItemButton>
       </EuiToolTip>
       {isModalOpen && (

@@ -8,6 +8,12 @@
  */
 
 /**
+ * Callback function to open the feedback modal.
+ * @public
+ */
+export type FeedbackAction = () => void;
+
+/**
  * Exposes public API of the Feedback service during the start phase.
  * @public
  */
@@ -16,4 +22,12 @@ export interface FeedbackStart {
    * Returns whether feedback elements are allowed to be shown.
    */
   isEnabled(): boolean;
+
+  /**
+   * Registers a callback that will be invoked when the user clicks
+   * the feedback button on error toasts.
+   * This allows plugins (like the feedback plugin) to provide the
+   * actual feedback modal implementation without core depending on them.
+   */
+  registerFeedbackAction(action: FeedbackAction): void;
 }

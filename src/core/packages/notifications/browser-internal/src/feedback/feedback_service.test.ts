@@ -20,6 +20,7 @@ describe('FeedbackService', () => {
 
       expect(feedbackStart).toBeDefined();
       expect(feedbackStart.isEnabled).toBeDefined();
+      expect(feedbackStart.registerFeedbackAction).toBeDefined();
     });
   });
 
@@ -42,5 +43,27 @@ describe('FeedbackService', () => {
         expect(mockSettings.globalClient.get).toHaveBeenCalledWith('hideFeedback', false);
       }
     );
+  });
+
+  describe('registerFeedbackAction()', () => {
+    it('registers a feedback action that can be retrieved via getFeedbackAction()', () => {
+      const service = new FeedbackService();
+      const mockSettings = settingsServiceMock.createStartContract();
+      const mockAction = jest.fn();
+
+      const feedbackStart = service.start({ settings: mockSettings });
+      feedbackStart.registerFeedbackAction(mockAction);
+
+      expect(service.getFeedbackAction()).toBe(mockAction);
+    });
+
+    it('returns undefined when no action is registered', () => {
+      const service = new FeedbackService();
+      const mockSettings = settingsServiceMock.createStartContract();
+
+      service.start({ settings: mockSettings });
+
+      expect(service.getFeedbackAction()).toBeUndefined();
+    });
   });
 });

@@ -82,6 +82,7 @@ export class NotificationsService {
         overlays,
         targetDomElement: toastsContainer,
         notificationCoordinator: this.coordinator,
+        getFeedbackAction: () => this.feedback.getFeedbackAction(),
         ...startDeps,
       }),
       showErrorDialog: ({ title, error }) =>
